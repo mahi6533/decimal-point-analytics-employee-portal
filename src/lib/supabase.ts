@@ -7,7 +7,16 @@ if (!supabaseUrl || !supabasePublishableKey) {
   console.warn('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to your environment.');
 }
 
+const key = supabasePublishableKey ?? 'placeholder-key';
+
 export const supabase = createClient(
   supabaseUrl ?? 'https://placeholder.supabase.co',
-  supabasePublishableKey ?? 'placeholder-key',
+  key,
+);
+
+// Authentication uses a same-origin Vercel proxy so browsers on networks that
+// cannot reach *.supabase.co can still sign in/sign up securely.
+export const supabaseAuth = createClient(
+  window.location.origin + '/api/supabase',
+  key,
 );
