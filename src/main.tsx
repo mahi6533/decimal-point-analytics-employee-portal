@@ -205,6 +205,7 @@ function App(){
          section==='Assets'?<Assets notify={notify}/>:
          section==='Support'?<Support notify={notify}/>:
          section==='Profile'?<Profile/>:
+         section==='Settings'?<SettingsPage notify={notify}/>:
          <Admin notify={notify}/>}
       </div>
     </main>
