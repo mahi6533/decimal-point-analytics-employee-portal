@@ -1,48 +1,52 @@
-export default async function handler(req, res) {
+export const config = { runtime: 'edge' };
+
+export default async function handler(req) {
   const projectUrl = 'https://fgzjqflwmiwnugtphbov.supabase.co';
-  const incomingUrl = new URL(req.url || '/', 'https://vercel.local');
+  const incomingUrl = new URL(req.url);
   const forwardedPath = incomingUrl.searchParams.get('path') || '';
   const cleanPath = forwardedPath.startsWith('/') ? forwardedPath : '/' + forwardedPath;
   const query = incomingUrl.searchParams.get('query') || '';
   const upstreamUrl = projectUrl + cleanPath + (query ? '?' + query : '');
 
-  const headers = new Headers();
-  for (const [key, value] of Object.entries(req.headers || {})) {
-    if (!value || ['host', 'content-length', 'connection'].includes(key.toLowerCase())) continue;
-    headers.set(key, Array.isArray(value) ? value.join(',') : String(value));
-  }
+  const headers = new Headers(req.headers);
+  headers.delete('host');
+  headers.delete('content-length');
+  headers.delete('connection');
 
   const publishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (publishableKey && !headers.has('apikey')) headers.set('apikey', publishableKey);
-
-  let body;
-  if (!['GET', 'HEAD'].includes(req.method || 'GET')) {
-    if (typeof req.body === 'string' || Buffer.isBuffer(req.body)) body = req.body;
-    else if (req.body != null) body = JSON.stringify(req.body);
+  if (publishableKey && !headers.has('apikey')) {
+    headers.set('apikey', publishableKey);
   }
 
   try {
     const upstream = await fetch(upstreamUrl, {
       method: req.method,
       headers,
-      body,
+      body: ['GET', 'HEAD'].includes(req.method) ? undefined : await req.arrayBuffer(),
       redirect: 'manual',
+      cache: 'no-store',
     });
 
-    const responseHeaders = {};
-    upstream.headers.forEach((value, key) => {
-      if (!['transfer-encoding', 'connection', 'content-encoding'].includes(key.toLowerCase())) responseHeaders[key] = value;
-    });
+    const responseHeaders = new Headers(upstream.headers);
+    responseHeaders.delete('transfer-encoding');
+    responseHeaders.delete('connection');
+    responseHeaders.set('cache-control', 'no-store');
 
-    const data = Buffer.from(await upstream.arrayBuffer());
-    res.status(upstream.status).setHeader('Cache-Control', 'no-store');
-    for (const [key, value] of Object.entries(responseHeaders)) res.setHeader(key, value);
-    return res.status(upstream.status).send(data);
+    return new Response(upstream.body, {
+      status: upstream.status,
+      headers: responseHeaders,
+    });
   } catch (error) {
-    return res.status(502).json({
+    return new Response(JSON.stringify({
       error: 'Supabase Auth proxy could not reach the upstream service.',
       detail: error instanceof Error ? error.message : String(error),
       upstream: upstreamUrl,
+    }), {
+      status: 502,
+      headers: {
+        'content-type': 'application/json',
+        'cache-control': 'no-store',
+      },
     });
   }
 }
