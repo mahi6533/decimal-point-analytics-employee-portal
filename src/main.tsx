@@ -277,7 +277,7 @@ function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Sec
         ['Open tasks','14','5','due this week',CheckSquare,''],
         ['Billable hours','132h','+8h','vs plan',Clock3,'up'],
         ['Leave balance','18.5','2','requests pending',CalendarDays,''],
-        ['Learning','72%','3','courses in progress',GraduationCap,'up']
+        ['Learning','72%','3','courses in progress',GraduationCap,'up'] as const
       ].map(([label,value,delta,caption,Icon,tone],i)=><div className="kpi-card" key={i}>
         <div className="kpi-top"><span>{label}</span><div className="kpi-icon">{React.createElement(Icon as any,{size:17})}</div></div>
         <strong>{value}</strong>
@@ -297,7 +297,7 @@ function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Sec
           ['Client data quality review','Analytics Platform','Due today','High','72%',AlertTriangle],
           ['Information security training','Learning Hub','Due Oct 04','Required','10%',ShieldCheck],
           ['Quarterly dashboard refresh','Risk Analytics','Due Oct 06','Medium','41%',BarChart3],
-          ['October leave request','People Operations','Pending approval','Normal','—',CalendarDays]
+          ['October leave request','People Operations','Pending approval','Normal','—',CalendarDays] as const
         ].map(([title,meta,due,priority,pct,Icon],i)=><button className="attention-row" key={i} onClick={()=>notify(String(title)+' opened')}>
           <div className="attention-icon">{React.createElement(Icon as any,{size:16})}</div>
           <div className="attention-main"><b>{title}</b><span>{meta} · {due}</span></div>
@@ -392,7 +392,7 @@ function Payroll({notify}:{notify:(s:string)=>void}){
 }
 
 function Benefits({notify}:{notify:(s:string)=>void}){
-  return <><PageTitle eyebrow="TOTAL REWARDS" title="Benefits & Perks" sub="Health, insurance, allowances and employee wellbeing programs." action={<button className="primary" onClick={()=>notify('Benefits enrollment opened')}><Plus size={16}/> Manage benefits</button>}/><div className="business-grid">{[['Health insurance','Family floater','₹5L coverage','Active',HeartHandshake],['Meal allowance','Monthly wallet','₹2,500 / month','Active',WalletCards],['Internet allowance','Hybrid work support','₹1,500 / month','Eligible',Globe2],['Wellness program','Learning & wellbeing','10 credits / year','6 used',Sparkles]].map((x,i)=><div className="business-card benefit-card" key={i}><div className="business-icon">{React.createElement(x[4] as any,{size:20})}</div><span>{x[1]}</span><h2>{x[0]}</h2><p>{x[2]}</p><label className="asset-status">{x[3]}</label><button className="link" onClick={()=>notify(x[0]+' details opened')}>View details <ArrowUpRight size={14}/></button></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Benefits contacts</h2><p>People to contact when you need support</p></div></div>{[['People Operations','Ritika Shah','Benefits specialist','Mumbai'],['Insurance desk','Corporate Benefits Team','Claims & queries','Remote'],['Wellbeing','Employee Assistance','Confidential support','Remote']].map((x,i)=><div className="contact-row" key={i}><div className="personavatar">{['RS','CB','EA'][i]}</div><div><b>{x[0]}</b><span>{x[1]} · {x[2]}</span></div><small>{x[3]}</small><button className="iconbtn" onClick={()=>notify('Contact options opened')}><Mail size={15}/></button></div>)}</section></>;
+  return <><PageTitle eyebrow="TOTAL REWARDS" title="Benefits & Perks" sub="Health, insurance, allowances and employee wellbeing programs." action={<button className="primary" onClick={()=>notify('Benefits enrollment opened')}><Plus size={16}/> Manage benefits</button>}/><div className="business-grid">{([['Health insurance','Family floater','₹5L coverage','Active',HeartHandshake],['Meal allowance','Monthly wallet','₹2,500 / month','Active',WalletCards],['Internet allowance','Hybrid work support','₹1,500 / month','Eligible',Globe2],['Wellness program','Learning & wellbeing','10 credits / year','6 used',Sparkles]] as const).map((x,i)=><div className="business-card benefit-card" key={i}><div className="business-icon">{React.createElement(x[4] as any,{size:20})}</div><span>{x[1]}</span><h2>{x[0]}</h2><p>{x[2]}</p><label className="asset-status">{x[3]}</label><button className="link" onClick={()=>notify(x[0]+' details opened')}>View details <ArrowUpRight size={14}/></button></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Benefits contacts</h2><p>People to contact when you need support</p></div></div>{[['People Operations','Ritika Shah','Benefits specialist','Mumbai'],['Insurance desk','Corporate Benefits Team','Claims & queries','Remote'],['Wellbeing','Employee Assistance','Confidential support','Remote']].map((x,i)=><div className="contact-row" key={i}><div className="personavatar">{['RS','CB','EA'][i]}</div><div><b>{x[0]}</b><span>{x[1]} · {x[2]}</span></div><small>{x[3]}</small><button className="iconbtn" onClick={()=>notify('Contact options opened')}><Mail size={15}/></button></div>)}</section></>;
 }
 
 function Travel({notify}:{notify:(s:string)=>void}){
