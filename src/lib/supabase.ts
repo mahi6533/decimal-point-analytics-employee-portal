@@ -14,9 +14,31 @@ export const supabase = createClient(
   key,
 );
 
-// Authentication uses a same-origin Vercel proxy so browsers on networks that
-// cannot reach *.supabase.co can still sign in/sign up securely.
+// Auth normally uses the same-origin Vercel route. If that route returns a
+// gateway error, retry the exact request directly against Supabase. This
+// keeps one Supabase client/session store while allowing the app to survive
+// a proxy-region or Vercel upstream problem.
+const authFetch: typeof fetch = async (input, init) => {
+  const response = await fetch(input, init);
+
+  if (response.status < 500 || !supabaseUrl) return response;
+
+  const requestUrl = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  const proxyPrefix = window.location.origin + '/api/supabase';
+  if (!requestUrl.startsWith(proxyPrefix)) return response;
+
+  const directUrl = supabaseUrl + requestUrl.slice(proxyPrefix.length);
+  try {
+    return await fetch(directUrl, init);
+  } catch {
+    return response;
+  }
+};
+
 export const supabaseAuth = createClient(
   window.location.origin + '/api/supabase',
   key,
+  {
+    global: { fetch: authFetch },
+  },
 );
