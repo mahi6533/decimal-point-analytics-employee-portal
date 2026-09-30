@@ -14,29 +14,29 @@ export const supabase = createClient(
   key,
 );
 
-// Auth normally uses the same-origin Vercel route. If that route returns a
-// gateway error, retry the exact request directly against Supabase. This
-// keeps one Supabase client/session store while allowing the app to survive
-// a proxy-region or Vercel upstream problem.
+const proxyUrl = window.location.origin + '/api/supabase';
+const directUrl = supabaseUrl ?? 'https://placeholder.supabase.co';
+
+// Use direct Supabase Auth first. If the browser/network blocks Supabase,
+// transparently retry through the same-origin Vercel proxy.
 const authFetch: typeof fetch = async (input, init) => {
-  const response = await fetch(input, init);
-
-  if (response.status < 500 || !supabaseUrl) return response;
-
   const requestUrl = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-  const proxyPrefix = window.location.origin + '/api/supabase';
-  if (!requestUrl.startsWith(proxyPrefix)) return response;
 
-  const directUrl = supabaseUrl + requestUrl.slice(proxyPrefix.length);
-  try {
-    return await fetch(directUrl, init);
-  } catch {
-    return response;
+  if (requestUrl.startsWith(proxyUrl)) {
+    const directRequestUrl = directUrl + requestUrl.slice(proxyUrl.length);
+    try {
+      const directResponse = await fetch(directRequestUrl, init);
+      if (directResponse.status < 500) return directResponse;
+    } catch {
+      // Fall through to the proxy.
+    }
   }
+
+  return fetch(input, init);
 };
 
 export const supabaseAuth = createClient(
-  window.location.origin + '/api/supabase',
+  directUrl,
   key,
   {
     global: { fetch: authFetch },
