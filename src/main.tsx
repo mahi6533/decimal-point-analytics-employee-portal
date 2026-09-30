@@ -11,7 +11,195 @@ const progress=(base:number)=>Math.min(99,base+((dayBucket%5)*3));
 const tasks=[['Client data quality review','Analytics Platform',dayBucket%2===0?'Today':taskDue(2),'High',progress(72)+'%'],['Quarterly dashboard refresh','Risk Analytics',taskDue(4),'Medium',progress(41)+'%'],['Model validation pack','Quant Research',taskDue(7),'High',progress(18)+'%'],['Knowledge base update','Internal',taskDue(10),'Low',progress(86)+'%']];
 const people=[['AS','Ananya Shah','VP · Analytics','Mumbai'],['RK','Rohan Kulkarni','Senior Analyst','Pune'],['PN','Priya Nair','Project Manager','Bengaluru'],['VM','Vikram Mehta','Data Engineer','Mumbai'],['SI','Sneha Iyer','HR Business Partner','Pune'],['AD','Amit Deshmukh','Team Lead','Nashik']];
 const activities=[['09:42','Completed','Client data quality review'],['09:10','Updated','Quarterly dashboard refresh'],['Yesterday','Approved','Leave request · 2 days'],['Yesterday','Uploaded','Project charter v3.pdf']];
-function App(){const[section,setSection]=useState<Section>('Overview');const[open,setOpen]=useState(false);const[query,setQuery]=useState('');const[toast,setToast]=useState('');const[dbStatus,setDbStatus]=useState('checking');const[session,setSession]=useState<any>(null);const[demoMode,setDemoMode]=useState(()=>localStorage.getItem('dpa_demo_mode')==='1');const[authLoading,setAuthLoading]=useState(true);const[commandOpen,setCommandOpen]=useState(false);const[noticeOpen,setNoticeOpen]=useState(false);const[profileOpen,setProfileOpen]=useState(false);useEffect(()=>{let active=true;(async()=>{const {data}=await supabaseAuth.auth.getSession();if(active){setSession(data.session);setAuthLoading(false)}})();const {data:listener}=supabaseAuth.auth.onAuthStateChange((_event,nextSession)=>{setSession(nextSession);setAuthLoading(false)});return()=>{active=false;listener.subscription.unsubscribe()}},[]);useEffect(()=>{let active=true;(async()=>{try{const {error}=await supabase.from('projects').select('id').limit(1);if(active)setDbStatus(error?'offline':'connected')}catch{if(active)setDbStatus('offline')}})();return()=>{active=false}},[]);useEffect(()=>{const onKey=(e:KeyboardEvent)=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setCommandOpen(true)}if(e.key==='Escape'){setCommandOpen(false);setNoticeOpen(false);setProfileOpen(false)}};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey)},[]);const notify=(s:string)=>{setToast(s);setTimeout(()=>setToast(''),2200)};if(authLoading)return <div className="auth-shell"><div className="auth-card"><div className="mark">D</div><h1>Decimal Point Analytics</h1><p>Loading secure workspace…</p></div></div>;if(!session&&!demoMode)return <AuthScreen onDemo={()=>{localStorage.setItem('dpa_demo_mode','1');setDemoMode(true)}}/>;return <div className="app"><aside className={open?'side open':'side'}><div className="brand"><div className="mark">D</div><div><b>DECIMAL POINT</b><span>ANALYTICS</span></div><button className="close" onClick={()=>setOpen(false)}><X/></button></div><div className="workspace"><span>WORKSPACE</span><strong>Mahesh Shirsath</strong><small>Employee · Analytics</small></div><nav>{nav.map(([key,label,Icon])=><button className={section===key?'active':''} onClick={()=>{setSection(key);setOpen(false)}} key={key}><Icon size={18}/><span>{label}</span>{key==='Announcements'&&<em>3</em>}</button>)}</nav><div className="sidebottom"><div className="secure"><ShieldCheck size={17}/><div><b>Secure workspace</b><span>Database online</span></div></div><button onClick={async()=>{await supabaseAuth.auth.signOut().catch(()=>{});localStorage.removeItem('dpa_demo_mode');setDemoMode(false);notify('Signed out safely')}}><LogOut size={17}/>Sign out</button></div></aside><main><header><button className="hamb" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><span>Employee Portal</span><ChevronRight size={15}/><b>{section}</b></div><div className="head-actions"><button className="command-trigger" onClick={()=>setCommandOpen(true)}><Search size={16}/><span>Search workspace...</span><kbd>⌘ K</kbd></button><button className="iconbtn header-icon" onClick={()=>setNoticeOpen(!noticeOpen)}><Bell size={19}/><i>3</i></button><button className="avatar profile-trigger" onClick={()=>setProfileOpen(!profileOpen)}>MS</button></div>{noticeOpen&&<div className="header-popover notifications"><div className="popover-head"><b>Notifications</b><span>3 new</span></div><div className="notice"><div className="notice-dot"></div><div><b>Task due soon</b><span>Client data quality review · Today</span></div></div><div className="notice"><div className="notice-dot"></div><div><b>Leave approved</b><span>Your October leave request was approved.</span></div></div><div className="notice"><div className="notice-dot"></div><div><b>Security training</b><span>Annual awareness module is due this week.</span></div></div><button className="popover-link" onClick={()=>{setNoticeOpen(false);setSection('Announcements')}}>View all notifications</button></div>}{profileOpen&&<div className="header-popover profile-popover"><div className="profile-pop-head"><div className="avatar">MS</div><div><b>Mahesh Shirsath</b><span>Employee · Analytics</span></div></div><button onClick={()=>{setProfileOpen(false);setSection('Profile')}}><Users size={15}/> My profile</button><button onClick={()=>{setProfileOpen(false);notify('Preferences opened')}}><Settings size={15}/> Preferences</button><button onClick={async()=>{await supabaseAuth.auth.signOut().catch(()=>{});localStorage.removeItem('dpa_demo_mode');setDemoMode(false)}}><LogOut size={15}/> Sign out</button></div></header><div className="content">{section==='Overview'?<Overview notify={notify} setSection={setSection}/>:section==='My Work'?<MyWork query={query}/>:section==='Directory'?<Directory query={query}/>:section==='Attendance'?<Attendance/>:section==='Leave'?<Leave notify={notify}/>:section==='Documents'?<Documents/>:section==='Calendar'?<Calendar/>:section==='Announcements'?<Announcements/>:section==='Performance'?<Performance notify={notify}/>:section==='Learning'?<Learning notify={notify}/>:section==='Expenses'?<Expenses notify={notify}/>:section==='Assets'?<Assets notify={notify}/>:section==='Support'?<Support notify={notify}/>:section==='Profile'?<Profile/>:<Admin notify={notify}/>}</div></main>{commandOpen&&<div className="command-overlay" onClick={()=>setCommandOpen(false)}><div className="command-palette" onClick={e=>e.stopPropagation()}><div className="command-search"><Search size={18}/><input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search pages, people and actions..." /><kbd>ESC</kbd></div><div className="command-label">Quick navigation</div>{nav.slice(0,12).map(([key,label,Icon])=><button key={key} onClick={()=>{setSection(key);setCommandOpen(false)}}><Icon size={17}/><span>{label}</span><ChevronRight size={15}/></button>)}<div className="command-footer"><Command size={13}/> Command palette <span>Ctrl K</span></div></div></div>}{toast&&<div className="toast">✓ {toast}</div>}</div>}
+function App(){
+  const[section,setSection]=useState<Section>('Overview');
+  const[open,setOpen]=useState(false);
+  const[query,setQuery]=useState('');
+  const[toast,setToast]=useState('');
+  const[dbStatus,setDbStatus]=useState('checking');
+  const[session,setSession]=useState<any>(null);
+  const[demoMode,setDemoMode]=useState(()=>localStorage.getItem('dpa_demo_mode')==='1');
+  const[authLoading,setAuthLoading]=useState(true);
+  const[commandOpen,setCommandOpen]=useState(false);
+  const[noticeOpen,setNoticeOpen]=useState(false);
+  const[profileOpen,setProfileOpen]=useState(false);
+
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      const{data}=await supabaseAuth.auth.getSession();
+      if(active){setSession(data.session);setAuthLoading(false);}
+    })();
+    const{data:listener}=supabaseAuth.auth.onAuthStateChange((_event,nextSession)=>{
+      setSession(nextSession);
+      setAuthLoading(false);
+    });
+    return()=>{active=false;listener.subscription.unsubscribe();};
+  },[]);
+
+  useEffect(()=>{
+    let active=true;
+    (async()=>{
+      try{
+        const{error}=await supabase.from('projects').select('id').limit(1);
+        if(active)setDbStatus(error?'offline':'connected');
+      }catch{
+        if(active)setDbStatus('offline');
+      }
+    })();
+    return()=>{active=false;};
+  },[]);
+
+  useEffect(()=>{
+    const onKey=(e:KeyboardEvent)=>{
+      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+      if(e.key==='Escape'){
+        setCommandOpen(false);
+        setNoticeOpen(false);
+        setProfileOpen(false);
+      }
+    };
+    window.addEventListener('keydown',onKey);
+    return()=>window.removeEventListener('keydown',onKey);
+  },[]);
+
+  const notify=(message:string)=>{
+    setToast(message);
+    setTimeout(()=>setToast(''),2200);
+  };
+
+  if(authLoading){
+    return <div className="auth-shell"><div className="auth-card"><div className="mark">D</div><h1>Decimal Point Analytics</h1><p>Loading secure workspace…</p></div></div>;
+  }
+
+  if(!session&&!demoMode){
+    return <AuthScreen onDemo={()=>{
+      localStorage.setItem('dpa_demo_mode','1');
+      setDemoMode(true);
+    }}/>;
+  }
+
+  const signOut=async()=>{
+    await supabaseAuth.auth.signOut().catch(()=>{});
+    localStorage.removeItem('dpa_demo_mode');
+    setDemoMode(false);
+    notify('Signed out safely');
+  };
+
+  return <div className="app">
+    <aside className={open?'side open':'side'}>
+      <div className="brand">
+        <div className="mark">D</div>
+        <div><b>DECIMAL POINT</b><span>ANALYTICS</span></div>
+        <button className="close" onClick={()=>setOpen(false)}><X/></button>
+      </div>
+
+      <div className="workspace">
+        <span>WORKSPACE</span>
+        <strong>Mahesh Shirsath</strong>
+        <small>Employee · Analytics</small>
+      </div>
+
+      <nav>
+        {nav.map(([key,label,Icon])=><button
+          className={section===key?'active':''}
+          onClick={()=>{setSection(key);setOpen(false);}}
+          key={key}
+        >
+          <Icon size={18}/>
+          <span>{label}</span>
+          {key==='Announcements'&&<em>3</em>}
+        </button>)}
+      </nav>
+
+      <div className="sidebottom">
+        <div className="secure">
+          <ShieldCheck size={17}/>
+          <div><b>Secure workspace</b><span>Database online</span></div>
+        </div>
+        <button onClick={signOut}><LogOut size={17}/>Sign out</button>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <button className="hamb" onClick={()=>setOpen(true)}><Menu/></button>
+
+        <div className="crumb">
+          <span>Employee Portal</span>
+          <ChevronRight size={15}/>
+          <b>{section}</b>
+        </div>
+
+        <div className="head-actions">
+          <button className="command-trigger" onClick={()=>setCommandOpen(true)}>
+            <Search size={16}/><span>Search workspace...</span><kbd>⌘ K</kbd>
+          </button>
+          <button className="iconbtn header-icon" onClick={()=>setNoticeOpen(v=>!v)}>
+            <Bell size={19}/><i>3</i>
+          </button>
+          <button className="avatar profile-trigger" onClick={()=>setProfileOpen(v=>!v)}>MS</button>
+        </div>
+
+        {noticeOpen&&<div className="header-popover notifications">
+          <div className="popover-head"><b>Notifications</b><span>3 new</span></div>
+          <div className="notice"><div className="notice-dot"></div><div><b>Task due soon</b><span>Client data quality review · Today</span></div></div>
+          <div className="notice"><div className="notice-dot"></div><div><b>Leave approved</b><span>Your October leave request was approved.</span></div></div>
+          <div className="notice"><div className="notice-dot"></div><div><b>Security training</b><span>Annual awareness module is due this week.</span></div></div>
+          <button className="popover-link" onClick={()=>{setNoticeOpen(false);setSection('Announcements');}}>View all notifications</button>
+        </div>}
+
+        {profileOpen&&<div className="header-popover profile-popover">
+          <div className="profile-pop-head">
+            <div className="avatar">MS</div>
+            <div><b>Mahesh Shirsath</b><span>Employee · Analytics</span></div>
+          </div>
+          <button onClick={()=>{setProfileOpen(false);setSection('Profile');}}><Users size={15}/> My profile</button>
+          <button onClick={()=>{setProfileOpen(false);notify('Preferences opened');}}><Settings size={15}/> Preferences</button>
+          <button onClick={signOut}><LogOut size={15}/> Sign out</button>
+        </div>}
+      </header>
+
+      <div className="content">
+        {section==='Overview'?<Overview notify={notify} setSection={setSection}/>:
+         section==='My Work'?<MyWork query={query}/>:
+         section==='Directory'?<Directory query={query}/>:
+         section==='Attendance'?<Attendance/>:
+         section==='Leave'?<Leave notify={notify}/>:
+         section==='Documents'?<Documents/>:
+         section==='Calendar'?<Calendar/>:
+         section==='Announcements'?<Announcements/>:
+         section==='Performance'?<Performance notify={notify}/>:
+         section==='Learning'?<Learning notify={notify}/>:
+         section==='Expenses'?<Expenses notify={notify}/>:
+         section==='Assets'?<Assets notify={notify}/>:
+         section==='Support'?<Support notify={notify}/>:
+         section==='Profile'?<Profile/>:
+         <Admin notify={notify}/>}
+      </div>
+    </main>
+
+    {commandOpen&&<div className="command-overlay" onClick={()=>setCommandOpen(false)}>
+      <div className="command-palette" onClick={e=>e.stopPropagation()}>
+        <div className="command-search">
+          <Search size={18}/>
+          <input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search pages, people and actions..."/>
+          <kbd>ESC</kbd>
+        </div>
+        <div className="command-label">Quick navigation</div>
+        {nav.slice(0,12).map(([key,label,Icon])=><button key={key} onClick={()=>{setSection(key);setCommandOpen(false);}}>
+          <Icon size={17}/><span>{label}</span><ChevronRight size={15}/>
+        </button>)}
+        <div className="command-footer"><Command size={13}/> Command palette <span>Ctrl K</span></div>
+      </div>
+    </div>}
+
+    {toast&&<div className="toast">✓ {toast}</div>}
+  </div>;
+}
 
 function AuthScreen({onDemo}:{onDemo:()=>void}){const[mode,setMode]=useState<'signin'|'signup'>('signin');const[name,setName]=useState('');const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[busy,setBusy]=useState(false);const[message,setMessage]=useState('');const[diagnostic,setDiagnostic]=useState<'checking'|'reachable'|'unreachable'>('checking');const[diagnosticText,setDiagnosticText]=useState('Checking Supabase Auth…');const authDirectUrl=(import.meta.env.VITE_SUPABASE_URL as string|undefined)||'';useEffect(()=>{let active=true;(async()=>{try{const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),7000);const res=await fetch(authDirectUrl+'/auth/v1/health',{method:'GET',headers:{apikey:(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string|undefined)||''},signal:controller.signal});window.clearTimeout(timer);if(!res.ok)throw new Error('HTTP '+res.status);if(active){setDiagnostic('reachable');setDiagnosticText('Supabase Auth is reachable directly.')}}catch(error:any){if(active){setDiagnostic('unreachable');setDiagnosticText(error?.name==='AbortError'?'Supabase Auth check timed out.':error?.message||'Supabase Auth could not be reached directly.')}}})();return()=>{active=false}},[authDirectUrl]);const submit=async(e:React.FormEvent)=>{e.preventDefault();setBusy(true);setMessage('');try{if(mode==='signup'){if(password.length<6){setMessage('Password must be at least 6 characters.');setBusy(false);return}const {data,error}=await supabaseAuth.auth.signUp({email:email.trim(),password,options:{data:{full_name:name.trim()||email.split('@')[0]}}});if(error)throw error;setMessage(data.session?'Account created.':'Account created. Check your email to confirm it, then sign in.')}else{const {error}=await supabaseAuth.auth.signInWithPassword({email:email.trim(),password});if(error)throw error}}catch(error:any){const raw=error?.message||'Authentication failed.';setMessage(raw==='Failed to fetch'?'Failed to fetch — the browser could not reach Supabase Auth. Use the diagnostic status below to identify whether this is a network/service issue.':raw)}finally{setBusy(false)}};return <div className="auth-shell"><div className="auth-card"><div className="auth-brand"><div className="mark">D</div><div><b>DECIMAL POINT</b><span>ANALYTICS</span></div></div><div className="auth-eyebrow">SECURE EMPLOYEE PORTAL</div><h1>{mode==='signin'?'Welcome back':'Create your employee account'}</h1><p className="auth-sub">{mode==='signin'?'Sign in to access your Decimal Point Analytics workspace.':'Create an account to access the employee workspace.'}</p><form onSubmit={submit}>{mode==='signup'&&<label>Full name<input value={name} onChange={e=>setName(e.target.value)} placeholder="Mahesh Shirsath" required/></label>}<label>Work email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" required/></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" minLength={6} required/></label>{message&&<div className="auth-message">{message}</div>}<button className="primary auth-submit" disabled={busy}>{busy?'Please wait…':mode==='signin'?'Sign in':'Create account'}</button></form><button className="auth-switch" onClick={()=>{setMode(mode==='signin'?'signup':'signin');setMessage('')}}>{mode==='signin'?'Need an account? Create one':'Already have an account? Sign in'}</button><div className="auth-diagnostic"><span className={diagnostic}></span><div><b>Auth connection</b><small>{diagnosticText}</small></div></div><button type="button" className="auth-switch" onClick={onDemo}>Continue in demo workspace</button><div className="auth-note"><ShieldCheck size={16}/> Authentication is handled securely by Supabase.</div></div></div>}
 
