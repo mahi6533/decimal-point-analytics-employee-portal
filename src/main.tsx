@@ -1,8 +1,30 @@
-import React,{useEffect,useState}from'react';import{createRoot}from'react-dom/client';import{LayoutDashboard,Users,Briefcase,CheckSquare,CalendarDays,Clock3,FileText,Bell,Headphones,Settings,Search,ChevronRight,ArrowUpRight,TrendingUp,ShieldCheck,Menu,X,LogOut,Building2,MapPin,Mail,Phone,Globe2,Plus,Download,MoreHorizontal,GraduationCap,WalletCards,Laptop2,Target,FileCheck,Command,MessageSquare}from'lucide-react';import'./styles.css';
+import React,{useEffect,useState}from'react';import{createRoot}from'react-dom/client';import{LayoutDashboard,Users,Briefcase,CheckSquare,CalendarDays,Clock3,FileText,Bell,Headphones,Settings,Search,ChevronRight,ArrowUpRight,TrendingUp,ShieldCheck,Menu,X,LogOut,Building2,MapPin,Mail,Phone,Globe2,Plus,Download,MoreHorizontal,GraduationCap,WalletCards,Laptop2,Target,FileCheck,Command,MessageSquare,FolderKanban,ReceiptText,HeartHandshake,PlaneTakeoff,SlidersHorizontal,Sparkles,CheckCircle2,AlertTriangle,ArrowDownRight,UsersRound,CreditCard,Landmark,CircleDollarSign,Network,BarChart3}from'lucide-react';import'./styles.css';
 import { supabase, supabaseAuth } from './lib/supabase';
 
-type Section='Overview'|'My Work'|'Attendance'|'Leave'|'Documents'|'Directory'|'Calendar'|'Announcements'|'Support'|'Profile'|'Admin'|'Performance'|'Learning'|'Expenses'|'Assets';
-const nav:[Section,string,any][]=[['Overview','Overview',LayoutDashboard],['My Work','My Work',Briefcase],['Attendance','Attendance',Clock3],['Leave','Leave',CalendarDays],['Documents','Documents',FileText],['Directory','Directory',Users],['Calendar','Calendar',CalendarDays],['Announcements','Announcements',Bell],['Performance','Performance',Target],['Learning','Learning Hub',GraduationCap],['Expenses','Expenses',WalletCards],['Assets','My Assets',Laptop2],['Support','Support',Headphones],['Profile','Profile',Users],['Admin','Admin Center',ShieldCheck]];
+type Section='Overview'|'My Work'|'Projects'|'Attendance'|'Timesheet'|'Leave'|'Documents'|'Directory'|'Calendar'|'Announcements'|'Performance'|'Learning'|'Expenses'|'Payroll'|'Benefits'|'Travel'|'Assets'|'Support'|'Profile'|'Settings'|'Admin';
+const nav:[Section,string,any][]=[
+  ['Overview','Overview',LayoutDashboard],
+  ['My Work','My Work',Briefcase],
+  ['Projects','Projects & Delivery',FolderKanban],
+  ['Calendar','Calendar',CalendarDays],
+  ['Attendance','Attendance',Clock3],
+  ['Timesheet','Timesheet',CheckSquare],
+  ['Leave','Leave & Holidays',CalendarDays],
+  ['Documents','Documents',FileText],
+  ['Directory','Company Directory',UsersRound],
+  ['Performance','Performance',Target],
+  ['Learning','Learning Hub',GraduationCap],
+  ['Expenses','Expenses',WalletCards],
+  ['Payroll','Payroll',Landmark],
+  ['Benefits','Benefits & Perks',HeartHandshake],
+  ['Travel','Business Travel',PlaneTakeoff],
+  ['Assets','My Assets',Laptop2],
+  ['Announcements','Announcements',Bell],
+  ['Support','Service Desk',Headphones],
+  ['Profile','My Profile',Users],
+  ['Settings','Settings',SlidersHorizontal],
+  ['Admin','Admin Center',ShieldCheck]
+];
 const dayBucket=Math.floor(Date.now()/(5*24*60*60*1000));
 const today=new Date();
 const dateLabel=(d:Date)=>d.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
@@ -166,8 +188,10 @@ function App(){
       <div className="content">
         {section==='Overview'?<Overview notify={notify} setSection={setSection}/>:
          section==='My Work'?<MyWork query={query}/>:
+         section==='Projects'?<Projects notify={notify}/>:
          section==='Directory'?<Directory query={query}/>:
          section==='Attendance'?<Attendance/>:
+         section==='Timesheet'?<Timesheet notify={notify}/>:
          section==='Leave'?<Leave notify={notify}/>:
          section==='Documents'?<Documents/>:
          section==='Calendar'?<Calendar/>:
@@ -175,6 +199,9 @@ function App(){
          section==='Performance'?<Performance notify={notify}/>:
          section==='Learning'?<Learning notify={notify}/>:
          section==='Expenses'?<Expenses notify={notify}/>:
+         section==='Payroll'?<Payroll notify={notify}/>:
+         section==='Benefits'?<Benefits notify={notify}/>:
+         section==='Travel'?<Travel notify={notify}/>:
          section==='Assets'?<Assets notify={notify}/>:
          section==='Support'?<Support notify={notify}/>:
          section==='Profile'?<Profile/>:
@@ -190,7 +217,7 @@ function App(){
           <kbd>ESC</kbd>
         </div>
         <div className="command-label">Quick navigation</div>
-        {nav.slice(0,12).map(([key,label,Icon])=><button key={key} onClick={()=>{setSection(key);setCommandOpen(false);}}>
+        {nav.slice(0,15).map(([key,label,Icon])=><button key={key} onClick={()=>{setSection(key);setCommandOpen(false);}}>
           <Icon size={17}/><span>{label}</span><ChevronRight size={15}/>
         </button>)}
         <div className="command-footer"><Command size={13}/> Command palette <span>Ctrl K</span></div>
@@ -204,8 +231,172 @@ function App(){
 function AuthScreen({onDemo}:{onDemo:()=>void}){const[mode,setMode]=useState<'signin'|'signup'>('signin');const[name,setName]=useState('');const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[busy,setBusy]=useState(false);const[message,setMessage]=useState('');const[diagnostic,setDiagnostic]=useState<'checking'|'reachable'|'unreachable'>('checking');const[diagnosticText,setDiagnosticText]=useState('Checking Supabase Auth…');const authDirectUrl=(import.meta.env.VITE_SUPABASE_URL as string|undefined)||'';useEffect(()=>{let active=true;(async()=>{try{const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),7000);const res=await fetch(authDirectUrl+'/auth/v1/health',{method:'GET',headers:{apikey:(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string|undefined)||''},signal:controller.signal});window.clearTimeout(timer);if(!res.ok)throw new Error('HTTP '+res.status);if(active){setDiagnostic('reachable');setDiagnosticText('Supabase Auth is reachable directly.')}}catch(error:any){if(active){setDiagnostic('unreachable');setDiagnosticText(error?.name==='AbortError'?'Supabase Auth check timed out.':error?.message||'Supabase Auth could not be reached directly.')}}})();return()=>{active=false}},[authDirectUrl]);const submit=async(e:React.FormEvent)=>{e.preventDefault();setBusy(true);setMessage('');try{if(mode==='signup'){if(password.length<6){setMessage('Password must be at least 6 characters.');setBusy(false);return}const {data,error}=await supabaseAuth.auth.signUp({email:email.trim(),password,options:{data:{full_name:name.trim()||email.split('@')[0]}}});if(error)throw error;setMessage(data.session?'Account created.':'Account created. Check your email to confirm it, then sign in.')}else{const {error}=await supabaseAuth.auth.signInWithPassword({email:email.trim(),password});if(error)throw error}}catch(error:any){const raw=error?.message||'Authentication failed.';setMessage(raw==='Failed to fetch'?'Failed to fetch — the browser could not reach Supabase Auth. Use the diagnostic status below to identify whether this is a network/service issue.':raw)}finally{setBusy(false)}};return <div className="auth-shell"><div className="auth-card"><div className="auth-brand"><div className="mark">D</div><div><b>DECIMAL POINT</b><span>ANALYTICS</span></div></div><div className="auth-eyebrow">SECURE EMPLOYEE PORTAL</div><h1>{mode==='signin'?'Welcome back':'Create your employee account'}</h1><p className="auth-sub">{mode==='signin'?'Sign in to access your Decimal Point Analytics workspace.':'Create an account to access the employee workspace.'}</p><form onSubmit={submit}>{mode==='signup'&&<label>Full name<input value={name} onChange={e=>setName(e.target.value)} placeholder="Mahesh Shirsath" required/></label>}<label>Work email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" required/></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" minLength={6} required/></label>{message&&<div className="auth-message">{message}</div>}<button className="primary auth-submit" disabled={busy}>{busy?'Please wait…':mode==='signin'?'Sign in':'Create account'}</button></form><button className="auth-switch" onClick={()=>{setMode(mode==='signin'?'signup':'signin');setMessage('')}}>{mode==='signin'?'Need an account? Create one':'Already have an account? Sign in'}</button><div className="auth-diagnostic"><span className={diagnostic}></span><div><b>Auth connection</b><small>{diagnosticText}</small></div></div><button type="button" className="auth-switch" onClick={onDemo}>Continue in demo workspace</button><div className="auth-note"><ShieldCheck size={16}/> Authentication is handled securely by Supabase.</div></div></div>}
 
 function PageTitle({eyebrow,title,sub,action}:{eyebrow:string,title:string,sub:string,action?:React.ReactNode}){return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{sub}</p></div>{action}</div>}
-function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Section)=>void}){const attendanceKey='dpa_attendance_'+new Date().toISOString().slice(0,10);const[attendanceMarked,setAttendanceMarked]=useState(()=>localStorage.getItem(attendanceKey)==='1');const markAttendance=()=>{localStorage.setItem(attendanceKey,'1');setAttendanceMarked(true);notify('Attendance marked for today');};return <><section className="hero"><div><div className="eyebrow">GOOD MORNING, MAHESH</div><h1>Ready for a productive day?</h1><p>Your analytics workspace is on track. Here’s your operational snapshot for September 30.</p><div className="hero-actions"><button className="primary" onClick={()=>setSection('My Work')}>View my work <ArrowUpRight size={16}/></button>{!attendanceMarked&&<button className="ghost" onClick={markAttendance}>Mark attendance</button>}</div></div><div className="hero-art"><div className="orb one"></div><div className="orb two"></div><div className="mini-card"><TrendingUp size={18}/><b>+18.4%</b><span>team productivity</span></div></div></section><div className="stats">{[['Utilization','86.2%','+4.1% vs last month'],['Active projects','06','2 milestones this week'],['Open tasks','14','5 due this week'],['Leave balance','18.5 days','2 requests pending']].map((x,i)=><div className="stat" key={i}><span>{x[0]}</span><strong>{x[1]}</strong><small className={i===0?'up':''}>{x[2]}</small></div>)}</div><div className="grid2"><section className="panel"><div className="panel-head"><div><h2>My work</h2><p>Priority tasks across active engagements</p></div><button className="link" onClick={()=>setSection('My Work')}>View all <ChevronRight size={15}/></button></div>{tasks.slice(0,3).map((t,i)=><div className="task" key={i}><div className="check">{i===0?'✓':''}</div><div className="taskmain"><b>{t[0]}</b><span>{t[1]} · Due {t[2]}</span></div><label className={'priority '+t[3].toLowerCase()}>{t[3]}</label><div className="progress"><i style={{width:t[4]}}></i></div><strong className="pct">{t[4]}</strong></div>)}</section><section className="panel"><div className="panel-head"><div><h2>Today</h2><p>Wednesday · September 30, 2026</p></div><button className="iconbtn"><MoreHorizontal size={18}/></button></div><div className="timeline">{activities.map((a,i)=><div className="event" key={i}><time>{a[0]}</time><div className="dot"></div><div><b>{a[1]}</b><span>{a[2]}</span></div></div>)}</div></section></div><section className="panel wide"><div className="panel-head"><div><h2>Active engagements</h2><p>Portfolio health across your assigned projects</p></div><button className="link" onClick={()=>setSection('My Work')}>Project workspace <ArrowUpRight size={15}/></button></div><div className="projects">{[['Analytics Platform','Data & Insights','92%','On track'],['Risk Analytics','Financial Analytics','76%','On track'],['Client Intelligence','Research','58%','At risk'],['Enterprise Data Hub','Technology','34%','Planning']].map((p,i)=><div className="project" key={i}><div className="project-icon">{['AP','RA','CI','ED'][i]}</div><div><b>{p[0]}</b><span>{p[1]}</span></div><div className="project-bar"><i style={{width:p[2]}}></i></div><strong>{p[2]}</strong><label className={p[3]==='At risk'?'risk':''}>{p[3]}</label></div>)}</div></section></>}
+function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Section)=>void}){
+  const attendanceKey='dpa_attendance_'+new Date().toISOString().slice(0,10);
+  const[attendanceMarked,setAttendanceMarked]=useState(()=>localStorage.getItem(attendanceKey)==='1');
+  const[period,setPeriod]=useState('This month');
+  const markAttendance=()=>{localStorage.setItem(attendanceKey,'1');setAttendanceMarked(true);notify('Attendance marked for today');};
+  const quick=(section:Section,message:string)=>{setSection(section);notify(message);};
+
+  return <>
+    <section className="dashboard-hero">
+      <div className="hero-copy">
+        <div className="eyebrow">EMPLOYEE COMMAND CENTER · SEPTEMBER 30, 2026</div>
+        <h1>Good morning, Mahesh.</h1>
+        <p>One workspace for delivery, people operations, finance, learning and workplace services.</p>
+        <div className="hero-actions">
+          <button className="primary" onClick={()=>quick('My Work','Opening your active work queue')}><Briefcase size={16}/> Open work queue <ArrowUpRight size={15}/></button>
+          {!attendanceMarked&&<button className="ghost" onClick={markAttendance}><Clock3 size={16}/> Mark attendance</button>}
+          <button className="hero-link" onClick={()=>notify('Command center ready')}><Sparkles size={15}/> Ask the workspace</button>
+        </div>
+      </div>
+      <div className="hero-side">
+        <div className="hero-health"><span>WORKSPACE HEALTH</span><strong>Healthy</strong><small>All key services available</small></div>
+        <div className="hero-ring"><b>86%</b><span>utilization</span></div>
+      </div>
+    </section>
+
+    <div className="command-strip">
+      <button onClick={()=>quick('Projects','Opening project portfolio')}><FolderKanban size={17}/><span>Projects</span><small>06 active</small></button>
+      <button onClick={()=>quick('Timesheet','Opening this week’s timesheet')}><Clock3 size={17}/><span>Timesheet</span><small>38h 20m</small></button>
+      <button onClick={()=>quick('Leave','Opening leave balance')}><CalendarDays size={17}/><span>Time off</span><small>18.5 days</small></button>
+      <button onClick={()=>quick('Expenses','Opening expense claims')}><ReceiptText size={17}/><span>Expenses</span><small>₹7,850 pending</small></button>
+      <button onClick={()=>quick('Learning','Opening assigned learning')}><GraduationCap size={17}/><span>Learning</span><small>2 due soon</small></button>
+    </div>
+
+    <div className="kpi-grid">
+      {[
+        ['Utilization','86.2%','+4.1%','vs last month',TrendingUp,'up'],
+        ['Active delivery','06','2','milestones this week',FolderKanban,''],
+        ['Open tasks','14','5','due this week',CheckSquare,''],
+        ['Billable hours','132h','+8h','vs plan',Clock3,'up'],
+        ['Leave balance','18.5','2','requests pending',CalendarDays,''],
+        ['Learning','72%','3','courses in progress',GraduationCap,'up']
+      ].map(([label,value,delta,caption,Icon,tone],i)=><div className="kpi-card" key={i}>
+        <div className="kpi-top"><span>{label}</span><div className="kpi-icon">{React.createElement(Icon as any,{size:17})}</div></div>
+        <strong>{value}</strong>
+        <div className={'kpi-delta '+String(tone)}>{delta} <span>{caption}</span></div>
+      </div>)}
+    </div>
+
+    <div className="section-heading-row">
+      <div><div className="eyebrow">OPERATIONS OVERVIEW</div><h2>What needs your attention</h2><p>Priorities across work, people and workplace services.</p></div>
+      <select value={period} onChange={e=>setPeriod(e.target.value)}><option>This month</option><option>Last month</option><option>This quarter</option></select>
+    </div>
+
+    <div className="dashboard-grid-main">
+      <section className="panel attention-panel">
+        <div className="panel-head"><div><h2>Priority queue</h2><p>Actions that are time-sensitive or blocking delivery</p></div><button className="link" onClick={()=>setSection('My Work')}>View work queue <ChevronRight size={15}/></button></div>
+        {[
+          ['Client data quality review','Analytics Platform','Due today','High','72%',AlertTriangle],
+          ['Information security training','Learning Hub','Due Oct 04','Required','10%',ShieldCheck],
+          ['Quarterly dashboard refresh','Risk Analytics','Due Oct 06','Medium','41%',BarChart3],
+          ['October leave request','People Operations','Pending approval','Normal','—',CalendarDays]
+        ].map(([title,meta,due,priority,pct,Icon],i)=><button className="attention-row" key={i} onClick={()=>notify(String(title)+' opened')}>
+          <div className="attention-icon">{React.createElement(Icon as any,{size:16})}</div>
+          <div className="attention-main"><b>{title}</b><span>{meta} · {due}</span></div>
+          <label className={'priority '+String(priority).toLowerCase()}>{priority}</label>
+          <strong>{pct}</strong>
+          <ChevronRight size={15}/>
+        </button>)}
+      </section>
+
+      <section className="panel capacity-panel">
+        <div className="panel-head"><div><h2>Capacity & focus</h2><p>Current week allocation</p></div><button className="iconbtn" onClick={()=>notify('Capacity report opened')}><MoreHorizontal size={18}/></button></div>
+        <div className="capacity-score"><div><b>86%</b><span>allocated</span></div><div className="capacity-ring"><i></i></div></div>
+        <div className="capacity-list">
+          {[
+            ['Client delivery','32h','76%'],
+            ['Internal analytics','11h','52%'],
+            ['Learning & growth','4h','28%'],
+            ['Meetings','8h','61%']
+          ].map((x,i)=><div key={i}><div><span>{x[0]}</span><b>{x[1]}</b></div><div className="micro-bar"><i style={{width:x[2]}}></i></div></div>)}
+        </div>
+        <button className="outline-wide" onClick={()=>quick('Timesheet','Opening timesheet summary')}>Review timesheet <ArrowUpRight size={14}/></button>
+      </section>
+    </div>
+
+    <div className="dashboard-grid-main lower">
+      <section className="panel">
+        <div className="panel-head"><div><h2>Weekly activity</h2><p>Work rhythm across the last 7 days</p></div><span className="panel-badge">38h 20m total</span></div>
+        <div className="activity-chart">
+          {[['Mon',62,'6h 12m'],['Tue',78,'8h 04m'],['Wed',92,'8h 42m'],['Thu',76,'7h 18m'],['Fri',54,'5h 11m'],['Sat',18,'1h 02m'],['Sun',0,'']].map((x,i)=><div className="chart-col" key={i}><div className="chart-value">{x[2]}</div><div className="chart-track"><i style={{height:x[1]+'%'}}></i></div><span>{x[0]}</span></div>)}
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="panel-head"><div><h2>Upcoming</h2><p>Meetings & milestones</p></div><button className="link" onClick={()=>setSection('Calendar')}>Calendar <ChevronRight size={15}/></button></div>
+        {[
+          ['10:30 AM','Client steering sync','Analytics Platform','30 min'],
+          ['02:00 PM','Risk dashboard review','Risk Analytics','45 min'],
+          ['Tomorrow','1:1 with Rohan','People · Manager','30 min'],
+          ['Oct 04','Security refresher deadline','Learning Hub','Required']
+        ].map((x,i)=><div className="upcoming-row" key={i}><time>{x[0]}</time><div><b>{x[1]}</b><span>{x[2]}</span></div><small>{x[3]}</small></div>)}
+      </section>
+    </div>
+
+    <section className="panel portfolio-panel">
+      <div className="panel-head"><div><div className="eyebrow">DELIVERY PORTFOLIO</div><h2>Active engagements</h2><p>Portfolio health across assigned programs and workstreams.</p></div><button className="link" onClick={()=>setSection('Projects')}>Open portfolio <ArrowUpRight size={15}/></button></div>
+      <div className="portfolio-table">
+        <div className="portfolio-head"><span>Program</span><span>Workstream</span><span>Health</span><span>Progress</span><span>Owner</span><span>Next milestone</span></div>
+        {[
+          ['Analytics Platform','Data quality & automation','On track','92%','Mahesh','Oct 03'],
+          ['Risk Analytics','Executive dashboard','On track','76%','Mahesh','Oct 06'],
+          ['Client Intelligence','Research pipeline','Watch','58%','Priya Nair','Oct 10'],
+          ['Enterprise Data Hub','Data engineering','Planning','34%','Vikram Mehta','Oct 18']
+        ].map((p,i)=><div className="portfolio-row" key={i}><div><b>{p[0]}</b><span>{p[1]}</span></div><span className={'health '+String(p[2]).toLowerCase().replace(' ','-')}>{p[2]}</span><div className="table-progress"><i style={{width:p[3]}}></i></div><strong>{p[3]}</strong><span>{p[4]}</span><span>{p[5]}</span></div>)}
+      </div>
+    </section>
+
+    <div className="dashboard-footer-grid">
+      <section className="panel compact-panel">
+        <div className="panel-head"><div><h2>Latest announcements</h2><p>Company-wide updates</p></div><button className="link" onClick={()=>setSection('Announcements')}>View all</button></div>
+        {[
+          ['Annual strategy town hall','Leadership','Sep 29'],
+          ['Security awareness month','IT & Security','Sep 25'],
+          ['New analytics practice launch','Business Update','Sep 22']
+        ].map((x,i)=><button className="news-row" key={i} onClick={()=>setSection('Announcements')}><div className="news-num">0{i+1}</div><div><b>{x[0]}</b><span>{x[1]}</span></div><small>{x[2]}</small><ArrowUpRight size={14}/></button>)}
+      </section>
+      <section className="panel compact-panel">
+        <div className="panel-head"><div><h2>Service status</h2><p>Core employee services</p></div><span className="status-live"><i></i> Live</span></div>
+        {[
+          ['Identity & access','Operational','99.99%'],
+          ['Employee workspace','Operational','99.98%'],
+          ['Documents','Operational','99.95%'],
+          ['Learning platform','Operational','99.97%']
+        ].map((x,i)=><div className="service-row" key={i}><div className="service-dot"><CheckCircle2 size={14}/></div><span>{x[0]}</span><small>{x[1]}</small><b>{x[2]}</b></div>)}
+      </section>
+    </div>
+  </>;
+}
 function MyWork({query}:{query:string}){const[selected,setSelected]=useState<any[]|null>(null);const[filter,setFilter]=useState('all');let data=tasks.filter(x=>x.join(' ').toLowerCase().includes(query.toLowerCase()));if(filter==='week')data=data.slice(0,3);return <><PageTitle eyebrow="WORK MANAGEMENT" title="My Work" sub="Track deliverables, priorities and project commitments." action={<button className="primary" onClick={()=>setSelected(['New task','Internal','Today','Medium','0%'])}><Plus size={16}/> New task</button>}/><div className="filterbar"><button className={'filter '+(filter==='all'?'active':'')} onClick={()=>setFilter('all')}>All tasks · 14</button><button className={'filter '+(filter==='projects'?'active':'')} onClick={()=>setFilter('projects')}>My projects</button><button className={'filter '+(filter==='week'?'active':'')} onClick={()=>setFilter('week')}>Due this week</button><span></span><div className="smallsearch"><Search size={16}/>{query||'Filter results'}</div></div><section className="panel"><div className="table-head"><span>Task</span><span>Project</span><span>Due</span><span>Priority</span><span>Progress</span></div>{data.map((t,i)=><button className="table-row task-click" key={i} onClick={()=>setSelected(t)}><div><div className="rowtitle"><span className="check"></span><b>{t[0]}</b></div><small>Owner: Mahesh Shirsath</small></div><span>{t[1]}</span><span>{t[2]}</span><label className={'priority '+t[3].toLowerCase()}>{t[3]}</label><div className="rowprogress"><i style={{width:t[4]}}></i><small>{t[4]}</small></div></button>)}</section>{selected&&<div className="task-overlay" onClick={()=>setSelected(null)}><div className="task-modal" onClick={e=>e.stopPropagation()}><div className="task-modal-head"><div><span className="eyebrow">TASK DETAILS</span><h2>{selected[0]}</h2><p>Assigned to Mahesh Shirsath · {selected[1]}</p></div><button className="iconbtn" onClick={()=>setSelected(null)}>×</button></div><div className="task-detail-grid"><div><span>Project</span><b>{selected[1]}</b></div><div><span>Due date</span><b>{selected[2]}</b></div><div><span>Priority</span><label className={'priority '+selected[3].toLowerCase()}>{selected[3]}</label></div><div><span>Status</span><b>{selected[4]==='100%'?'Completed':'In progress'}</b></div></div><div className="task-progress-large"><div><span>Completion</span><b>{selected[4]}</b></div><div className="progress"><i style={{width:selected[4]}}></i></div></div><div className="task-description"><h3>Task overview</h3><p>Review assigned deliverables, validate the latest data, document findings and prepare the work package for the next project milestone. Update the task when a review or client dependency is completed.</p><h3>Checklist</h3><label><input type="checkbox" defaultChecked/> Review source data and requirements</label><label><input type="checkbox"/> Validate outputs and exceptions</label><label><input type="checkbox"/> Upload supporting documents</label><label><input type="checkbox"/> Mark deliverable ready for review</label></div><div className="task-modal-actions"><button className="ghost" onClick={()=>setSelected(null)}>Close</button><button className="primary" onClick={()=>setSelected(null)}>Update task</button></div></div></div>}</>}
+
+function Projects({notify}:{notify:(s:string)=>void}){
+  const rows=[['Analytics Platform','Data & Insights','92%','On track','Oct 03','12'],['Risk Analytics','Financial Analytics','76%','On track','Oct 06','8'],['Client Intelligence','Research','58%','Watch','Oct 10','15'],['Enterprise Data Hub','Technology','34%','Planning','Oct 18','21']];
+  return <><PageTitle eyebrow="PORTFOLIO MANAGEMENT" title="Projects & Delivery" sub="Portfolio health, milestones, delivery metrics and workstream ownership." action={<button className="primary" onClick={()=>notify('Create project workflow opened')}><Plus size={16}/> New project</button>}/><div className="stats">{[['Active programs','06','2 launching this month'],['Milestones','24','5 due in 7 days'],['Delivery health','92%','Across assigned work'],['Open risks','03','1 needs escalation']].map((x,i)=><div className="stat" key={i}><span>{x[0]}</span><strong>{x[1]}</strong><small className={i===2?'up':''}>{x[2]}</small></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Portfolio</h2><p>Program-level delivery view</p></div><button className="ghost" onClick={()=>notify('Portfolio export prepared')}><Download size={15}/> Export report</button></div><div className="portfolio-table full"><div className="portfolio-head"><span>Program</span><span>Workstream</span><span>Health</span><span>Progress</span><span>Next milestone</span><span>Tasks</span></div>{rows.map((p,i)=><button className="portfolio-row clickable" key={i} onClick={()=>notify(p[0]+' workspace opened')}><div><b>{p[0]}</b><span>{p[1]}</span></div><span className={'health '+p[3].toLowerCase()}>{p[3]}</span><div className="table-progress"><i style={{width:p[2]}}></i></div><strong>{p[2]}</strong><span>{p[4]}</span><span>{p[5]}</span></button>)}</div></section><div className="grid2"><section className="panel"><div className="panel-head"><div><h2>Delivery risks</h2><p>Items requiring review</p></div></div>{[['Client Intelligence','Data dependency','Medium','Oct 02'],['Risk Analytics','Sign-off pending','Low','Oct 04'],['Enterprise Data Hub','Resource alignment','Medium','Oct 07']].map((r,i)=><div className="risk-row" key={i}><div className="risk-icon"><AlertTriangle size={15}/></div><div><b>{r[0]}</b><span>{r[1]}</span></div><label className={r[2].toLowerCase()}>{r[2]}</label><small>{r[3]}</small></div>)}</section><section className="panel"><div className="panel-head"><div><h2>Team distribution</h2><p>Work across active programs</p></div></div>{[['Analytics','42%'],['Research','21%'],['Technology','24%'],['Internal','13%']].map((x,i)=><div className="distribution-row" key={i}><span>{x[0]}</span><b>{x[1]}</b><div className="micro-bar"><i style={{width:x[1]}}></i></div></div>)}</section></div></>;
+}
+
+function Timesheet({notify}:{notify:(s:string)=>void}){
+  const days=[['Mon','8h 12m'],['Tue','8h 04m'],['Wed','8h 42m'],['Thu','7h 18m'],['Fri','6h 04m'],['Sat','—'],['Sun','—']];
+  return <><PageTitle eyebrow="TIME TRACKING" title="Timesheet" sub="Review weekly hours, attendance records and billable allocation." action={<button className="primary" onClick={()=>notify('Timesheet submitted for review')}><CheckCircle2 size={16}/> Submit week</button>}/><div className="timesheet-banner"><div><span>WEEK OF SEP 28 — OCT 04</span><strong>38h 20m</strong><small>2h 40m remaining to planned weekly capacity</small></div><div className="timesheet-progress"><i style={{width:'76%'}}></i></div><button onClick={()=>notify('Timesheet preferences opened')}>Week settings <Settings size={14}/></button></div><section className="panel"><div className="panel-head"><div><h2>Daily entries</h2><p>Hours captured from attendance and project allocation</p></div></div>{days.map((d,i)=><div className="time-row" key={i}><b>{d[0]}</b><span>{['Analytics Platform','Risk Analytics','Internal','Analytics Platform','Research','',''][i]||'—'}</span><span>{d[1]}</span><label>{i===5||i===6?'Weekend':'Recorded'}</label><button className="iconbtn" onClick={()=>notify('Edit '+d[0]+' opened')}><ArrowUpRight size={14}/></button></div>)}</section></>;
+}
+
+function Payroll({notify}:{notify:(s:string)=>void}){
+  return <><PageTitle eyebrow="PAY & COMPENSATION" title="Payroll" sub="Compensation summary, payslips, tax documents and payment preferences." action={<button className="ghost" onClick={()=>notify('Payslip archive opened')}><Download size={16}/> Payslip archive</button>}/><div className="stats">{[['Current gross','₹84,500','Monthly'],['Net pay','₹72,140','Sep 30 credit'],['Tax withheld','₹9,420','Current month'],['YTD earnings','₹7,18,250','FY 2026–27']].map((x,i)=><div className="stat" key={i}><span>{x[0]}</span><strong>{x[1]}</strong><small>{x[2]}</small></div>)}</div><div className="grid2"><section className="panel"><div className="panel-head"><div><h2>Latest payslip</h2><p>September 2026 payroll</p></div><span className="status-live"><i></i> Processed</span></div><div className="pay-slip"><div><span>Gross pay</span><b>₹84,500</b></div><div><span>Deductions</span><b>₹12,360</b></div><div><span>Net pay</span><b>₹72,140</b></div></div><button className="outline-wide" onClick={()=>notify('September payslip downloaded')}><Download size={14}/> Download payslip</button></section><section className="panel"><div className="panel-head"><div><h2>Tax & compliance</h2><p>Documents available for download</p></div></div>{[['Form 16','FY 2025–26','Available'],['Investment declaration','FY 2026–27','Open'],['Bank account','•••• 4421','Verified']].map((x,i)=><div className="simple-row" key={i}><div><b>{x[0]}</b><span>{x[1]}</span></div><label>{x[2]}</label><ChevronRight size={15}/></div>)}</section></div></>;
+}
+
+function Benefits({notify}:{notify:(s:string)=>void}){
+  return <><PageTitle eyebrow="TOTAL REWARDS" title="Benefits & Perks" sub="Health, insurance, allowances and employee wellbeing programs." action={<button className="primary" onClick={()=>notify('Benefits enrollment opened')}><Plus size={16}/> Manage benefits</button>}/><div className="business-grid">{[['Health insurance','Family floater','₹5L coverage','Active',HeartHandshake],['Meal allowance','Monthly wallet','₹2,500 / month','Active',WalletCards],['Internet allowance','Hybrid work support','₹1,500 / month','Eligible',Globe2],['Wellness program','Learning & wellbeing','10 credits / year','6 used',Sparkles]].map((x,i)=><div className="business-card benefit-card" key={i}><div className="business-icon">{React.createElement(x[4] as any,{size:20})}</div><span>{x[1]}</span><h2>{x[0]}</h2><p>{x[2]}</p><label className="asset-status">{x[3]}</label><button className="link" onClick={()=>notify(x[0]+' details opened')}>View details <ArrowUpRight size={14}/></button></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Benefits contacts</h2><p>People to contact when you need support</p></div></div>{[['People Operations','Ritika Shah','Benefits specialist','Mumbai'],['Insurance desk','Corporate Benefits Team','Claims & queries','Remote'],['Wellbeing','Employee Assistance','Confidential support','Remote']].map((x,i)=><div className="contact-row" key={i}><div className="personavatar">{['RS','CB','EA'][i]}</div><div><b>{x[0]}</b><span>{x[1]} · {x[2]}</span></div><small>{x[3]}</small><button className="iconbtn" onClick={()=>notify('Contact options opened')}><Mail size={15}/></button></div>)}</section></>;
+}
+
+function Travel({notify}:{notify:(s:string)=>void}){
+  return <><PageTitle eyebrow="BUSINESS TRAVEL" title="Travel Desk" sub="Manage travel requests, itineraries, policy approvals and reimbursements." action={<button className="primary" onClick={()=>notify('Travel request started')}><Plus size={16}/> New travel request</button>}/><div className="stats">{[['Upcoming travel','02','Trips this quarter'],['Pending approvals','01','Needs manager review'],['Travel budget','₹86,000','FY remaining'],['Policy compliance','98%','Current profile']].map(x=><div className="stat"><span>{x[0]}</span><strong>{x[1]}</strong><small>{x[2]}</small></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Travel requests</h2><p>Active and upcoming business travel</p></div></div>{[['TRV-24014','Mumbai → Bengaluru','Oct 08 – Oct 10','Client workshop','Approved'],['TRV-24007','Nashik → Mumbai','Oct 15','Leadership offsite','Pending'],['TRV-23988','Pune → Hyderabad','Sep 05 – Sep 07','Project kickoff','Completed']].map((x,i)=><div className="travel-row" key={i}><div className="travel-icon"><PlaneTakeoff size={17}/></div><div><b>{x[0]} · {x[1]}</b><span>{x[2]} · {x[3]}</span></div><label className={x[4].toLowerCase()}>{x[4]}</label><button className="iconbtn" onClick={()=>notify(x[0]+' itinerary opened')}><ChevronRight size={15}/></button></div>)}</section><div className="grid2"><section className="panel"><div className="panel-head"><div><h2>Travel policy</h2><p>Your default policy profile</p></div></div><div className="policy-list"><div><span>Air travel</span><b>Economy under 4h</b></div><div><span>Hotel</span><b>Up to ₹6,000 / night</b></div><div><span>Local transport</span><b>Company policy</b></div></div></section><section className="panel"><div className="panel-head"><div><h2>Travel support</h2><p>Need help while on the move?</p></div></div><button className="support-action" onClick={()=>notify('Travel support opened')}><Headphones size={18}/><div><b>24×7 assistance</b><span>Emergency travel desk and itinerary support</span></div><ChevronRight size={15}/></button></section></div></>;
+}
+
+function SettingsPage({notify}:{notify:(s:string)=>void}){
+  const prefs=[['Desktop notifications','Receive task, leave and service alerts','On'],['Weekly digest','Get a Friday summary of work and people activity','On'],['Calendar reminders','15 minute reminder before meetings','On'],['Product updates','News about new portal features','Off']];
+  return <><PageTitle eyebrow="WORKSPACE PREFERENCES" title="Settings" sub="Personalize notifications, security and workspace behavior." action={<button className="primary" onClick={()=>notify('Settings saved')}><CheckCircle2 size={16}/> Save changes</button>}/><div className="grid2"><section className="panel settings-panel"><div className="panel-head"><div><h2>Notifications</h2><p>Choose what reaches your work inbox</p></div></div>{prefs.map((p,i)=><div className="setting-row" key={i}><div><b>{p[0]}</b><span>{p[1]}</span></div><button className={'toggle '+(p[2]==='On'?'on':'')} onClick={()=>notify(p[0]+' preference updated')}><i></i><span>{p[2]}</span></button></div>)}</section><section className="panel"><div className="panel-head"><div><h2>Security</h2><p>Account controls and active sessions</p></div></div>{[['MFA','Enabled · Authenticator app','Protected'],['Password','Last changed 38 days ago','Healthy'],['Sessions','2 active sessions','Review']].map((x,i)=><div className="simple-row" key={i}><div><b>{x[0]}</b><span>{x[1]}</span></div><label>{x[2]}</label><button className="link" onClick={()=>notify(x[0]+' settings opened')}>Manage</button></div>)}</section></div><section className="panel"><div className="panel-head"><div><h2>Workspace appearance</h2><p>Choose how the employee portal feels and behaves</p></div></div><div className="appearance-grid">{[['Density','Comfortable','Rows, cards and spacing'],['Theme','System','Matches your device'],['Start page','Overview','Open the dashboard on sign-in']].map(x=><button key={x[0]} className="appearance-card" onClick={()=>notify(x[0]+' preference selected')}><span>{x[0]}</span><b>{x[1]}</b><small>{x[2]}</small><ChevronRight size={15}/></button>)}</div></section></>;
+}
 
 function Directory({query}:{query:string}){let d=people.filter(p=>p.join(' ').toLowerCase().includes(query.toLowerCase()));return <><PageTitle eyebrow="PEOPLE & TEAMS" title="Company Directory" sub="Find colleagues, teams and business contacts across Decimal Point Analytics."/><div className="directory">{d.map((p,i)=><div className="person" key={i}><div className="personavatar">{p[0]}</div><div><b>{p[1]}</b><span>{p[2]}</span><small><MapPin size={13}/>{p[3]}</small></div><button className="iconbtn"><Mail size={17}/></button></div>)}</div></>}
 function Attendance(){return <><PageTitle eyebrow="TIME & ATTENDANCE" title="Attendance" sub="Your working hours, presence and monthly timesheet." action={<button className="primary"><Download size={16}/> Export</button>}/><div className="attendance-grid"><div className="panel clockcard"><span>Today's status</span><strong>08:42:18</strong><small>Wednesday · Sep 30</small><div className="clockline"><span>09:18 AM</span><span>06:00 PM expected</span></div><button className="primary">Checked in</button></div><div className="panel"><div className="panel-head"><div><h2>September summary</h2><p>Current month</p></div></div><div className="attstats"><div><b>19</b><span>Present</span></div><div><b>01</b><span>Leave</span></div><div><b>00</b><span>Absent</span></div><div><b>08h 42m</b><span>Avg. hours</span></div></div></div></div><section className="panel"><div className="panel-head"><div><h2>Recent attendance</h2><p>Latest submitted entries</p></div></div>{['Sep 30','Sep 29','Sep 28','Sep 25'].map((d,i)=><div className="attrow" key={d}><b>{d}</b><span>Present</span><span>09:{18-i*3} AM</span><span>06:{2+i*4} PM</span><strong>{i===0?'08h 42m':'08h 3'+i+'m'}</strong></div>)}</section></>}
