@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/supabase/:path*",
-      "destination": "/api/supabase-proxy?path=/:path*"
+      "destination": "https://fgzjqflwmiwnugtphbov.supabase.co/:path*"
     }
   ]
 }
