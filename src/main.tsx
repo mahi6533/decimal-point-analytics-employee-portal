@@ -126,15 +126,20 @@ function App(){
       </div>
 
       <nav>
-        {nav.map(([key,label,Icon])=><button
-          className={section===key?'active':''}
-          onClick={()=>{setSection(key);setOpen(false);}}
-          key={key}
-        >
-          <Icon size={18}/>
-          <span>{label}</span>
-          {key==='Announcements'&&<em>3</em>}
-        </button>)}
+        {nav.map(([key,label,Icon],index)=>{
+          const group=index===0?'WORKSPACE':index===4?'TIME & PEOPLE':index===9?'GROWTH':index===12?'FINANCE & WORKPLACE':index===16?'COMPANY':index===18?'ACCOUNT':index===20?'ADMINISTRATION':'';
+          return <React.Fragment key={key}>
+            {group&&<div className="nav-section-label">{group}</div>}
+            <button
+              className={section===key?'active':''}
+              onClick={()=>{setSection(key);setOpen(false);}}
+            >
+              <Icon size={18}/>
+              <span>{label}</span>
+              {key==='Announcements'&&<em>3</em>}
+            </button>
+          </React.Fragment>;
+        })}
       </nav>
 
       <div className="sidebottom">
