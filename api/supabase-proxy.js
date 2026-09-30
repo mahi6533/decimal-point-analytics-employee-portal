@@ -42,6 +42,7 @@ export default async function handler(req, res) {
     return res.status(502).json({
       error: 'Supabase Auth proxy could not reach the upstream service.',
       detail: error instanceof Error ? error.message : String(error),
+      upstream: upstreamUrl,
     });
   }
 }
