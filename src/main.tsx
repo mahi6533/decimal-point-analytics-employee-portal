@@ -196,7 +196,7 @@ function App(){
 
       <div className="content">
         {section==='Overview'?<Overview notify={notify} setSection={setSection}/>:
-         section==='My Work'?<MyWork query={query}/>:
+         section==='My Work'?<MyWork query={query} notify={notify}/>:
          section==='Projects'?<Projects notify={notify}/>:
          section==='Directory'?<Directory query={query} notify={notify}/>:
          section==='Attendance'?<Attendance notify={notify}/>:
@@ -404,8 +404,239 @@ function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Sec
     </div>
   </>;
 }
-function MyWork({query}:{query:string}){const[selected,setSelected]=useState<any[]|null>(null);const[filter,setFilter]=useState('all');let data=tasks.filter(x=>x.join(' ').toLowerCase().includes(query.toLowerCase()));if(filter==='week')data=data.slice(0,3);return <><PageTitle eyebrow="WORK MANAGEMENT" title="My Work" sub="Track deliverables, priorities and project commitments." action={<button className="primary" onClick={()=>setSelected(['New task','Internal','Today','Medium','0%'])}><Plus size={16}/> New task</button>}/><div className="filterbar"><button className={'filter '+(filter==='all'?'active':'')} onClick={()=>setFilter('all')}>All tasks · 14</button><button className={'filter '+(filter==='projects'?'active':'')} onClick={()=>setFilter('projects')}>My projects</button><button className={'filter '+(filter==='week'?'active':'')} onClick={()=>setFilter('week')}>Due this week</button><span></span><div className="smallsearch"><Search size={16}/>{query||'Filter results'}</div></div><section className="panel"><div className="table-head"><span>Task</span><span>Project</span><span>Due</span><span>Priority</span><span>Progress</span></div>{data.map((t,i)=><button className="table-row task-click" key={i} onClick={()=>setSelected(t)}><div><div className="rowtitle"><span className="check"></span><b>{t[0]}</b></div><small>Owner: Mahesh Shirsath</small></div><span>{t[1]}</span><span>{t[2]}</span><label className={'priority '+t[3].toLowerCase()}>{t[3]}</label><div className="rowprogress"><i style={{width:t[4]}}></i><small>{t[4]}</small></div></button>)}</section>{selected&&<div className="task-overlay" onClick={()=>setSelected(null)}><div className="task-modal" onClick={e=>e.stopPropagation()}><div className="task-modal-head"><div><span className="eyebrow">TASK DETAILS</span><h2>{selected[0]}</h2><p>Assigned to Mahesh Shirsath · {selected[1]}</p></div><button className="iconbtn" onClick={()=>setSelected(null)}>×</button></div><div className="task-detail-grid"><div><span>Project</span><b>{selected[1]}</b></div><div><span>Due date</span><b>{selected[2]}</b></div><div><span>Priority</span><label className={'priority '+selected[3].toLowerCase()}>{selected[3]}</label></div><div><span>Status</span><b>{selected[4]==='100%'?'Completed':'In progress'}</b></div></div><div className="task-progress-large"><div><span>Completion</span><b>{selected[4]}</b></div><div className="progress"><i style={{width:selected[4]}}></i></div></div><div className="task-description"><h3>Task overview</h3><p>Review assigned deliverables, validate the latest data, document findings and prepare the work package for the next project milestone. Update the task when a review or client dependency is completed.</p><h3>Checklist</h3><label><input type="checkbox" defaultChecked/> Review source data and requirements</label><label><input type="checkbox"/> Validate outputs and exceptions</label><label><input type="checkbox"/> Upload supporting documents</label><label><input type="checkbox"/> Mark deliverable ready for review</label></div><div className="task-modal-actions"><button className="ghost" onClick={()=>setSelected(null)}>Close</button><button className="primary" onClick={()=>setSelected(null)}>Update task</button></div></div></div>}</>}
+type WorkItem={
+  id:string;
+  title:string;
+  project:string;
+  type:'Delivery'|'Side Hustle';
+  client:string;
+  priority:'Urgent'|'High'|'Medium'|'Low';
+  status:'Backlog'|'In progress'|'In review'|'Blocked'|'Completed';
+  progress:number;
+  due:string;
+  estimate:string;
+  logged:string;
+  sprint:string;
+  owner:string;
+  description:string;
+  deliverable:string;
+  dependency:string;
+  checklist:string[];
+  activity:string[];
+  comments:string[];
+};
 
+const seedWorkItems:WorkItem[]=[
+  {
+    id:'WK-1048',title:'Client data quality review',project:'Analytics Platform',type:'Delivery',client:'Global Banking Client',
+    priority:'High',status:'In progress',progress:72,due:'Today',estimate:'6h',logged:'4h 20m',sprint:'Sprint 24',owner:'Mahesh Shirsath',
+    description:'Validate source-to-target data quality for the client analytics feed. Reconcile exception records, document root causes, and prepare the release-readiness note for the project manager.',
+    deliverable:'DQ validation workbook + release-readiness summary',
+    dependency:'Client source extract v7.2',
+    checklist:['Review source data and mapping rules','Reconcile exception records','Validate corrected outputs','Upload DQ evidence pack','Mark deliverable ready for review'],
+    activity:['09:42 · Exception set reconciled (38 records)','09:10 · Validation workbook updated','Yesterday · Source extract v7.2 received'],
+    comments:['Rohan · Please include the top 5 recurring exception patterns.']
+  },
+  {
+    id:'WK-1051',title:'Quarterly dashboard refresh',project:'Risk Analytics',type:'Delivery',client:'Internal Risk Office',
+    priority:'Medium',status:'In progress',progress:41,due:'Oct 06',estimate:'10h',logged:'3h 35m',sprint:'Sprint 24',owner:'Mahesh Shirsath',
+    description:'Refresh the executive risk dashboard with the latest quarter-end metrics, validate measures against the finance pack, and prepare the review version for leadership.',
+    deliverable:'Power BI dashboard v4 + metric reconciliation sheet',
+    dependency:'Q3 finance pack',
+    checklist:['Load quarter-end dataset','Refresh semantic model','Validate KPI calculations','Review dashboard layout','Publish review build'],
+    activity:['Yesterday · Q3 dataset loaded','Sep 29 · KPI reconciliation started','Sep 26 · Review comments incorporated'],
+    comments:['Priya · Use the new risk-severity definition from the September policy note.']
+  },
+  {
+    id:'WK-1058',title:'Model validation pack',project:'Quant Research',type:'Delivery',client:'Research Practice',
+    priority:'High',status:'In review',progress:64,due:'Oct 08',estimate:'8h',logged:'5h 10m',sprint:'Sprint 24',owner:'Mahesh Shirsath',
+    description:'Complete the model validation pack for the latest scoring model, covering stability metrics, drift observations, sample-level exceptions, and sign-off evidence.',
+    deliverable:'Validation memo + evidence annexure',
+    dependency:'Model v2.3 output snapshot',
+    checklist:['Run stability checks','Review drift indicators','Investigate sample exceptions','Prepare validation memo','Submit for peer review'],
+    activity:['Today · Validation memo updated','Sep 29 · Drift analysis complete','Sep 27 · Sample review finished'],
+    comments:['Ananya · Please call out any material drift separately in the executive summary.']
+  },
+  {
+    id:'WK-1062',title:'Knowledge base update',project:'Internal Analytics Enablement',type:'Delivery',client:'Decimal Point Analytics',
+    priority:'Low',status:'Backlog',progress:18,due:'Oct 12',estimate:'4h',logged:'45m',sprint:'Sprint 25',owner:'Mahesh Shirsath',
+    description:'Turn repeated analytics support questions into concise internal knowledge articles with examples, troubleshooting steps, and ownership guidance.',
+    deliverable:'3 published knowledge articles',
+    dependency:'SME review from Data Engineering',
+    checklist:['Collect recurring questions','Draft article 1','Draft article 2','Draft article 3','Submit SME review'],
+    activity:['Sep 30 · Topic list created','Sep 28 · Stakeholder interview completed'],
+    comments:[]
+  },
+  {
+    id:'SH-2101',title:'Internal analytics automation sprint',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Innovation Lab',
+    priority:'High',status:'In progress',progress:58,due:'Oct 05',estimate:'7h',logged:'3h 50m',sprint:'Innovation Sprint 03',owner:'Mahesh Shirsath',
+    description:'Prototype a small automation that converts recurring CSV quality checks into a repeatable review report. This is an internal innovation item and should remain separate from billable client delivery.',
+    deliverable:'Automation prototype + sample output report',
+    dependency:'Approved sample CSV dataset',
+    checklist:['Define input/output contract','Create validation rules','Build repeatable report generation','Test against sample datasets','Demo to analytics lead'],
+    activity:['10:05 · Rule set for null/duplicate checks drafted','Yesterday · Prototype folder created','Sep 29 · Idea approved for innovation sprint'],
+    comments:['Mahesh · Keep the prototype generic so it can be reused by other teams.']
+  },
+  {
+    id:'SH-2104',title:'Power BI dashboard polish lab',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Innovation Lab',
+    priority:'Medium',status:'In review',progress:76,due:'Oct 07',estimate:'5h',logged:'3h 40m',sprint:'Innovation Sprint 03',owner:'Mahesh Shirsath',
+    description:'Experiment with a more executive-friendly dashboard layout, consistent KPI cards, drill-through patterns, and a compact mobile experience for internal reporting.',
+    deliverable:'Dashboard design prototype + component guide',
+    dependency:'Internal design feedback',
+    checklist:['Review executive dashboard examples','Create component variations','Test drill-through interaction','Validate mobile layout','Share design guide'],
+    activity:['Today · KPI component variants prepared','Sep 30 · Mobile layout tested','Sep 28 · Initial prototype reviewed'],
+    comments:['Priya · Keep the visual system aligned with the enterprise portal.']
+  },
+  {
+    id:'SH-2110',title:'Personal analytics portfolio case study',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Professional Development',
+    priority:'Low',status:'Backlog',progress:22,due:'Oct 15',estimate:'6h',logged:'1h 10m',sprint:'Personal Build',owner:'Mahesh Shirsath',
+    description:'Build a sanitized case study showing an end-to-end analytics workflow: problem framing, data quality, exploration, KPI design, validation, and executive storytelling.',
+    deliverable:'Portfolio case study PDF + dashboard walkthrough',
+    dependency:'No confidential client data',
+    checklist:['Define case-study problem','Create synthetic dataset','Build analysis notebook','Design executive dashboard','Write final case study'],
+    activity:['Sep 30 · Problem statement drafted','Sep 27 · Synthetic dataset outline created'],
+    comments:[]
+  },
+  {
+    id:'SH-2116',title:'SQL performance pattern library',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Learning Guild',
+    priority:'Low',status:'Completed',progress:100,due:'Sep 29',estimate:'3h',logged:'3h 05m',sprint:'Innovation Sprint 02',owner:'Mahesh Shirsath',
+    description:'Create a reusable library of practical SQL patterns for joins, deduplication, exception analysis, and reconciliation workflows commonly used by analytics teams.',
+    deliverable:'SQL pattern library + examples',
+    dependency:'Peer review completed',
+    checklist:['Join pattern examples','Deduplication patterns','Reconciliation examples','Comment and document','Publish to learning hub'],
+    activity:['Sep 29 · Published to Learning Hub','Sep 28 · Peer review completed','Sep 26 · Examples finalized'],
+    comments:['Rohan · Good reusable reference for new analysts.']
+  }
+];
+
+function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
+  const stored=localStorage.getItem('dpa_work_items');
+  const[items,setItems]=useState<WorkItem[]>(()=>stored?(JSON.parse(stored) as WorkItem[]):seedWorkItems);
+  const[selected,setSelected]=useState<WorkItem|null>(null);
+  const[filter,setFilter]=useState<'all'|'delivery'|'side'|'due'|'active'|'completed'>('all');
+  const[showCreate,setShowCreate]=useState(false);
+  const[comment,setComment]=useState('');
+  const[newTask,setNewTask]=useState({title:'',project:'Internal Analytics',priority:'Medium' as WorkItem['priority'],due:'Oct 20',type:'Side Hustle' as WorkItem['type'],description:''});
+
+  useEffect(()=>{localStorage.setItem('dpa_work_items',JSON.stringify(items));},[items]);
+
+  const persistUpdate=(next:WorkItem)=>{
+    setItems(prev=>prev.map(x=>x.id===next.id?next:x));
+    setSelected(next);
+    notify('Task updated successfully');
+  };
+
+  const filtered=items.filter(x=>{
+    const matchesSearch=x.title.toLowerCase().includes(query.toLowerCase())||x.project.toLowerCase().includes(query.toLowerCase())||x.client.toLowerCase().includes(query.toLowerCase())||x.deliverable.toLowerCase().includes(query.toLowerCase());
+    if(!matchesSearch)return false;
+    if(filter==='delivery')return x.type==='Delivery';
+    if(filter==='side')return x.type==='Side Hustle';
+    if(filter==='due')return x.status!=='Completed';
+    if(filter==='active')return x.status==='In progress'||x.status==='In review'||x.status==='Blocked';
+    if(filter==='completed')return x.status==='Completed';
+    return true;
+  });
+  const delivery=filtered.filter(x=>x.type==='Delivery');
+  const side=filtered.filter(x=>x.type==='Side Hustle');
+  const activeCount=items.filter(x=>x.status!=='Completed').length;
+  const sideCount=items.filter(x=>x.type==='Side Hustle').length;
+  const completion=Math.round(items.reduce((sum,x)=>sum+x.progress,0)/items.length);
+
+  const openTask=(task:WorkItem)=>{setSelected(task);setComment('');};
+  const addTask=()=>{
+    if(!newTask.title.trim())return;
+    const item:WorkItem={
+      id:'WK-'+Math.floor(3000+Math.random()*6999),title:newTask.title.trim(),project:newTask.project,type:newTask.type,client:'Internal Workspace',
+      priority:newTask.priority,status:'Backlog',progress:0,due:newTask.due,estimate:'To estimate',logged:'0h',sprint:'Next sprint',owner:'Mahesh Shirsath',
+      description:newTask.description||'New work item created from My Work. Add scope, evidence and acceptance criteria before starting delivery.',
+      deliverable:'Define deliverable',dependency:'None',checklist:['Confirm scope and acceptance criteria','Create working draft','Review output','Attach supporting evidence','Mark complete'],activity:['Just now · Task created from My Work'],comments:[]
+    };
+    setItems(prev=>[item,...prev]);setShowCreate(false);setNewTask({title:'',project:'Internal Analytics',priority:'Medium',due:'Oct 20',type:'Side Hustle',description:''});openTask(item);notify('New task created');
+  };
+
+  return <>
+    <PageTitle eyebrow="WORK MANAGEMENT" title="My Work" sub="Your personal delivery cockpit — client work, internal commitments, side projects, evidence and execution history." action={<button className="primary" onClick={()=>setShowCreate(true)}><Plus size={16}/> New task</button>}/>
+
+    <div className="work-overview-grid">
+      <div className="work-summary-card primary-summary"><span>Total work items</span><strong>{items.length}</strong><small>{activeCount} active · {items.length-activeCount} completed</small></div>
+      <div className="work-summary-card"><span>Delivery tasks</span><strong>{items.filter(x=>x.type==='Delivery').length}</strong><small>Client & internal commitments</small></div>
+      <div className="work-summary-card"><span>Side hustle</span><strong>{sideCount}</strong><small>Innovation & personal build</small></div>
+      <div className="work-summary-card"><span>Avg. completion</span><strong>{completion}%</strong><small>Across all assigned work</small></div>
+    </div>
+
+    <section className="work-command-panel">
+      <div><div className="eyebrow">MY WORKSPACE</div><h2>Run your work from one place</h2><p>Open a task to see scope, deliverables, dependencies, checklist, history, comments and progress controls.</p></div>
+      <div className="work-command-stats"><div><b>38h 20m</b><span>logged this week</span></div><div><b>5</b><span>items due this week</span></div><div><b>2</b><span>items awaiting review</span></div></div>
+    </section>
+
+    <div className="work-filterbar">
+      <div className="work-tabs">
+        {[
+          ['all','All work',''],
+          ['delivery','Delivery',''],
+          ['side','Side Hustle',''],
+          ['active','Active',''],
+          ['due','Due soon',''],
+          ['completed','Completed','']
+        ].map(([key,label])=><button key={key} className={filter===key?'active':''} onClick={()=>setFilter(key as typeof filter)}>{label}<span>{key==='all'?items.length:key==='delivery'?items.filter(x=>x.type==='Delivery').length:key==='side'?sideCount:key==='completed'?items.filter(x=>x.status==='Completed').length:activeCount}</span></button>)}
+      </div>
+      <div className="smallsearch"><Search size={15}/>{query||'Workspace search'}</div>
+    </div>
+
+    <div className="work-layout">
+      <section className="panel work-list-panel">
+        <div className="panel-head"><div><h2>Delivery work</h2><p>Client, internal and recurring operational commitments</p></div><span className="panel-badge">{delivery.length} visible</span></div>
+        {delivery.length===0?<div className="empty-state">No delivery work matches the current filter.</div>:delivery.map(task=><button className="work-item-row" key={task.id} onClick={()=>openTask(task)}>
+          <div className="work-type-icon"><Briefcase size={16}/></div>
+          <div className="work-item-main"><div><b>{task.title}</b><span>{task.project} · {task.client}</span></div><div className="work-item-meta"><small>{task.id}</small><small>Due {task.due}</small><small>{task.estimate} estimate</small></div></div>
+          <label className={'priority '+task.priority.toLowerCase()}>{task.priority}</label>
+          <div className="work-progress-cell"><span>{task.progress}%</span><div className="progress"><i style={{width:task.progress+'%'}}></i></div></div>
+          <span className={'work-status '+task.status.toLowerCase().replace(/\s/g,'-')}>{task.status}</span>
+          <ChevronRight size={16}/>
+        </button>)}
+      </section>
+
+      <section className="panel work-list-panel side-hustle-panel">
+        <div className="panel-head"><div><h2>Side Hustle & Innovation</h2><p>Non-billable innovation, learning and personal build work</p></div><span className="side-hustle-badge"><Sparkles size={13}/> {side.length} ideas</span></div>
+        {side.length===0?<div className="empty-state">No side-hustle work matches the current filter.</div>:side.map(task=><button className="work-item-row side-row" key={task.id} onClick={()=>openTask(task)}>
+          <div className="work-type-icon side-icon"><Sparkles size={16}/></div>
+          <div className="work-item-main"><div><b>{task.title}</b><span>{task.project} · {task.client}</span></div><div className="work-item-meta"><small>{task.id}</small><small>Due {task.due}</small><small>{task.estimate}</small></div></div>
+          <label className={'priority '+task.priority.toLowerCase()}>{task.priority}</label>
+          <div className="work-progress-cell"><span>{task.progress}%</span><div className="progress"><i style={{width:task.progress+'%'}}></i></div></div>
+          <span className={'work-status '+task.status.toLowerCase().replace(/\s/g,'-')}>{task.status}</span>
+          <ChevronRight size={16}/>
+        </button>)}
+      </section>
+    </div>
+
+    <section className="panel work-capacity-panel">
+      <div className="panel-head"><div><h2>Execution board</h2><p>Where your work stands across the workflow lifecycle</p></div><button className="link" onClick={()=>{setFilter('active');notify('Showing active work')}}>Show active <ArrowUpRight size={14}/></button></div>
+      <div className="execution-board">{['Backlog','In progress','In review','Blocked','Completed'].map(status=>{
+        const col=items.filter(x=>x.status===status);
+        return <div className="execution-col" key={status}><div className="execution-col-head"><span>{status}</span><b>{col.length}</b></div>{col.slice(0,3).map(task=><button className="execution-card" key={task.id} onClick={()=>openTask(task)}><b>{task.title}</b><span>{task.project}</span><div><i style={{width:task.progress+'%'}}></i></div><small>{task.progress}% · {task.due}</small></button>)}{col.length>3&&<small className="more-count">+{col.length-3} more</small>}</div>
+      })}</div>
+    </section>
+
+    {showCreate&&<div className="task-overlay" onClick={()=>setShowCreate(false)}><div className="task-modal" onClick={e=>e.stopPropagation()}><div className="task-modal-head"><div><span className="eyebrow">CREATE WORK ITEM</span><h2>New task</h2><p>Add a real work item to your personal execution board.</p></div><button className="iconbtn" onClick={()=>setShowCreate(false)}>×</button></div><div className="create-task-grid"><label>Task title<input value={newTask.title} onChange={e=>setNewTask({...newTask,title:e.target.value})} placeholder="e.g. Build monthly client reconciliation"/></label><label>Work type<select value={newTask.type} onChange={e=>setNewTask({...newTask,type:e.target.value as WorkItem['type']})}><option>Delivery</option><option>Side Hustle</option></select></label><label>Project / workspace<input value={newTask.project} onChange={e=>setNewTask({...newTask,project:e.target.value})} placeholder="Project name"/></label><label>Priority<select value={newTask.priority} onChange={e=>setNewTask({...newTask,priority:e.target.value as WorkItem['priority']})}><option>Urgent</option><option>High</option><option>Medium</option><option>Low</option></select></label><label>Due date<input value={newTask.due} onChange={e=>setNewTask({...newTask,due:e.target.value})} placeholder="Oct 20"/></label><label className="create-span-2">Description<textarea value={newTask.description} onChange={e=>setNewTask({...newTask,description:e.target.value})} placeholder="Define the actual outcome, acceptance criteria and context."/></label></div><div className="task-modal-actions"><button className="ghost" onClick={()=>setShowCreate(false)}>Cancel</button><button className="primary" onClick={addTask}>Create task</button></div></div></div>}
+
+    {selected&&<div className="task-overlay" onClick={()=>setSelected(null)}><div className="task-modal rich-task-modal" onClick={e=>e.stopPropagation()}>
+      <div className="task-modal-head"><div><div className="task-id-line"><span className="eyebrow">{selected.id}</span><span className={'work-kind '+selected.type.toLowerCase().replace(/\s/g,'-')}>{selected.type}</span></div><h2>{selected.title}</h2><p>{selected.project} · {selected.client}</p></div><button className="iconbtn" onClick={()=>setSelected(null)}>×</button></div>
+      <div className="task-detail-grid rich"><div><span>Priority</span><label className={'priority '+selected.priority.toLowerCase()}>{selected.priority}</label></div><div><span>Due</span><b>{selected.due}</b></div><div><span>Estimate</span><b>{selected.estimate}</b></div><div><span>Logged</span><b>{selected.logged}</b></div><div><span>Sprint</span><b>{selected.sprint}</b></div><div><span>Owner</span><b>{selected.owner}</b></div><div><span>Dependency</span><b>{selected.dependency}</b></div><div><span>Deliverable</span><b>{selected.deliverable}</b></div></div>
+
+      <div className="task-progress-large"><div><span>Completion</span><b>{selected.progress}%</b></div><input className="task-range" type="range" min="0" max="100" value={selected.progress} onChange={e=>persistUpdate({...selected,progress:Number(e.target.value),status:Number(e.target.value)===100?'Completed':selected.status==='Completed'?'In progress':selected.status})}/><div className="progress"><i style={{width:selected.progress+'%'}}></i></div></div>
+
+      <div className="rich-task-grid">
+        <div className="task-detail-section"><h3>Task overview</h3><p>{selected.description}</p><h3>Acceptance checklist</h3>{selected.checklist.map((item,i)=><label className="check-row" key={item}><input type="checkbox" defaultChecked={selected.progress>=((i+1)/selected.checklist.length)*100}/><span>{item}</span></label>)}</div>
+        <div className="task-detail-section"><h3>Workflow status</h3><select className="task-status-select" value={selected.status} onChange={e=>persistUpdate({...selected,status:e.target.value as WorkItem['status']})}>{['Backlog','In progress','In review','Blocked','Completed'].map(x=><option key={x}>{x}</option>)}</select><h3>Recent activity</h3>{selected.activity.map(x=><div className="task-activity" key={x}><span></span><p>{x}</p></div>)}</div>
+      </div>
+
+      <div className="task-evidence-row"><div><span className="eyebrow">PRIMARY DELIVERABLE</span><b>{selected.deliverable}</b></div><button className="ghost" onClick={()=>notify('Deliverable workspace opened')}><FileCheck size={15}/> Open deliverable</button></div>
+      <div className="task-comments"><div className="panel-head"><div><h3>Comments & handoffs</h3><p>Context shared by teammates on this work item</p></div></div>{selected.comments.length?selected.comments.map((x,i)=><div className="comment" key={i}><div className="personavatar">{x.split(' · ')[0].slice(0,2)}</div><span>{x}</span></div>):<div className="empty-state">No comments yet. Add the first work note below.</div>}<div className="comment-composer"><input value={comment} onChange={e=>setComment(e.target.value)} placeholder="Add a progress note or handoff message"/><button className="primary" disabled={!comment.trim()} onClick={()=>{const next={...selected,comments:[...selected.comments, 'You · '+comment.trim()]};persistUpdate(next);setComment('')}}><MessageSquare size={14}/> Add note</button></div></div>
+
+      <div className="task-modal-actions"><button className="ghost" onClick={()=>setSelected(null)}>Close</button>{selected.status!=='Completed'&&<button className="primary" onClick={()=>persistUpdate({...selected,status:'Completed',progress:100})}><CheckCircle2 size={15}/> Mark complete</button>}</div>
+    </div></div>}
+  </>;
+}
 function Projects({notify}:{notify:(s:string)=>void}){
   const rows=[['Analytics Platform','Data & Insights','92%','On track','Oct 03','12'],['Risk Analytics','Financial Analytics','76%','On track','Oct 06','8'],['Client Intelligence','Research','58%','Watch','Oct 10','15'],['Enterprise Data Hub','Technology','34%','Planning','Oct 18','21']];
   return <><PageTitle eyebrow="PORTFOLIO MANAGEMENT" title="Projects & Delivery" sub="Portfolio health, milestones, delivery metrics and workstream ownership." action={<button className="primary" onClick={()=>notify('Create project workflow opened')}><Plus size={16}/> New project</button>}/><div className="stats">{[['Active programs','06','2 launching this month'],['Milestones','24','5 due in 7 days'],['Delivery health','92%','Across assigned work'],['Open risks','03','1 needs escalation']].map((x,i)=><div className="stat" key={i}><span>{x[0]}</span><strong>{x[1]}</strong><small className={i===2?'up':''}>{x[2]}</small></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Portfolio</h2><p>Program-level delivery view</p></div><button className="ghost" onClick={()=>notify('Portfolio export prepared')}><Download size={15}/> Export report</button></div><div className="portfolio-table full"><div className="portfolio-head"><span>Program</span><span>Workstream</span><span>Health</span><span>Progress</span><span>Next milestone</span><span>Tasks</span></div>{rows.map((p,i)=><button className="portfolio-row clickable" key={i} onClick={()=>notify(p[0]+' workspace opened')}><div><b>{p[0]}</b><span>{p[1]}</span></div><span className={'health '+p[3].toLowerCase()}>{p[3]}</span><div className="table-progress"><i style={{width:p[2]}}></i></div><strong>{p[2]}</strong><span>{p[4]}</span><span>{p[5]}</span></button>)}</div></section><div className="grid2"><section className="panel"><div className="panel-head"><div><h2>Delivery risks</h2><p>Items requiring review</p></div></div>{[['Client Intelligence','Data dependency','Medium','Oct 02'],['Risk Analytics','Sign-off pending','Low','Oct 04'],['Enterprise Data Hub','Resource alignment','Medium','Oct 07']].map((r,i)=><div className="risk-row" key={i}><div className="risk-icon"><AlertTriangle size={15}/></div><div><b>{r[0]}</b><span>{r[1]}</span></div><label className={r[2].toLowerCase()}>{r[2]}</label><small>{r[3]}</small></div>)}</section><section className="panel"><div className="panel-head"><div><h2>Team distribution</h2><p>Work across active programs</p></div></div>{[['Analytics','42%'],['Research','21%'],['Technology','24%'],['Internal','13%']].map((x,i)=><div className="distribution-row" key={i}><span>{x[0]}</span><b>{x[1]}</b><div className="micro-bar"><i style={{width:x[1]}}></i></div></div>)}</section></div></>;
