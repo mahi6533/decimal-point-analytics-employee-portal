@@ -44,7 +44,7 @@ function App(){
   const[authLoading,setAuthLoading]=useState(true);
   const[commandOpen,setCommandOpen]=useState(false);
   const[noticeOpen,setNoticeOpen]=useState(false);
-  const[profileOpen,setProfileOpen]=useState(false);
+  const[profileOpen,setProfileOpen]=useState(false);\n  const[action,setAction]=useState<string|null>(null);
 
   useEffect(()=>{
     let active=true;
@@ -91,6 +91,9 @@ function App(){
   const notify=(message:string)=>{
     setToast(message);
     setTimeout(()=>setToast(''),2200);
+    if(/opened$|started$|requested$/.test(message)){
+      setAction(message.replace(/\s+(opened|started|requested)$/,''));
+    }
   };
 
   if(authLoading){
