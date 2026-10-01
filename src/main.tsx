@@ -44,7 +44,8 @@ function App(){
   const[authLoading,setAuthLoading]=useState(true);
   const[commandOpen,setCommandOpen]=useState(false);
   const[noticeOpen,setNoticeOpen]=useState(false);
-  const[profileOpen,setProfileOpen]=useState(false);\n  const[action,setAction]=useState<string|null>(null);
+  const[profileOpen,setProfileOpen]=useState(false);
+  const[action,setAction]=useState<string|null>(null);
 
   useEffect(()=>{
     let active=true;
