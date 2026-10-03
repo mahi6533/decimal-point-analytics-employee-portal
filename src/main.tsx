@@ -177,8 +177,11 @@ function App(){
         </div>
 
         <div className="head-actions">
-          <div className="live-clock"><Clock3 size={15}/><div><b>{now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})}</b><span>{now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span></div></div>
-          <div className="session-pill"><span>SESSION</span><b>{hh}:{mm}:{ss}</b></div>
+          <div className="corner-status">
+            <div className="corner-time"><div className="corner-time-top"><Clock3 size={13}/><span>LOCAL TIME</span><i></i></div><strong>{now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})}</strong><small>{now.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short'})}</small></div>
+            <div className="corner-divider"></div>
+            <div className="corner-session"><div className="corner-session-top"><span>SESSION</span><b>LIVE</b></div><strong>{hh}:{mm}:{ss}</strong><small>Active now</small></div>
+          </div>
           <button className="command-trigger" onClick={()=>setCommandOpen(true)}>
             <Search size={16}/><span>Search workspace...</span><kbd>⌘ K</kbd>
           </button>
