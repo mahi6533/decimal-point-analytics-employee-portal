@@ -447,7 +447,7 @@ const seedWorkItems:WorkItem[]=[
     deliverable:'DQ validation workbook + release-readiness summary',
     dependency:'Client source extract v7.2',
     checklist:['Review source data and mapping rules','Reconcile exception records','Validate corrected outputs','Upload DQ evidence pack','Mark deliverable ready for review'],
-    activity:['09:42 · Exception set reconciled (38 records)','09:10 · Validation workbook updated','Yesterday · Source extract v7.2 received'],
+    activity:['09:42 · Exception set reconciled (38 records)','09:10 · Validation workbook updated',workDay(-1)+' · Source extract v7.2 received'],
     comments:['Rohan · Please include the top 5 recurring exception patterns.']
   },
   {
@@ -457,7 +457,7 @@ const seedWorkItems:WorkItem[]=[
     deliverable:'Power BI dashboard v4 + metric reconciliation sheet',
     dependency:'Q3 finance pack',
     checklist:['Load quarter-end dataset','Refresh semantic model','Validate KPI calculations','Review dashboard layout','Publish review build'],
-    activity:['Yesterday · Q3 dataset loaded','workDay(-4)+' ·' KPI reconciliation started','workDay(-7)+' ·' Review comments incorporated'],
+    activity:[workDay(-1)+' · Q3 dataset loaded',workDay(-4)+' · KPI reconciliation started',workDay(-7)+' · Review comments incorporated'],
     comments:['Priya · Use the new risk-severity definition from the September policy note.']
   },
   {
@@ -467,7 +467,7 @@ const seedWorkItems:WorkItem[]=[
     deliverable:'Validation memo + evidence annexure',
     dependency:'Model v2.3 output snapshot',
     checklist:['Run stability checks','Review drift indicators','Investigate sample exceptions','Prepare validation memo','Submit for peer review'],
-    activity:['Today · Validation memo updated','workDay(-4)+' ·' Drift analysis complete','workDay(-6)+' ·' Sample review finished'],
+    activity:[workDay(0)+' · Validation memo updated',workDay(-4)+' · Drift analysis complete',workDay(-6)+' · Sample review finished'],
     comments:['Ananya · Please call out any material drift separately in the executive summary.']
   },
   {
@@ -477,7 +477,7 @@ const seedWorkItems:WorkItem[]=[
     deliverable:'3 published knowledge articles',
     dependency:'SME review from Data Engineering',
     checklist:['Collect recurring questions','Draft article 1','Draft article 2','Draft article 3','Submit SME review'],
-    activity:['workDay(-3)+' ·' Topic list created','workDay(-5)+' ·' Stakeholder interview completed'],
+    activity:[workDay(-3)+' · Topic list created',workDay(-5)+' · Stakeholder interview completed'],
     comments:[]
   },
   {
@@ -487,7 +487,7 @@ const seedWorkItems:WorkItem[]=[
     deliverable:'Automation prototype + sample output report',
     dependency:'Approved sample CSV dataset',
     checklist:['Define input/output contract','Create validation rules','Build repeatable report generation','Test against sample datasets','Demo to analytics lead'],
-    activity:['10:05 · Rule set for null/duplicate checks drafted','Yesterday · Prototype folder created','workDay(-4)+' ·' Idea approved for innovation sprint'],
+    activity:['10:05 · Rule set for null/duplicate checks drafted',workDay(-1)+' · Prototype folder created',workDay(-4)+' · Idea approved for innovation sprint'],
     comments:['Mahesh · Keep the prototype generic so it can be reused by other teams.']
   },
   {
@@ -497,7 +497,7 @@ const seedWorkItems:WorkItem[]=[
     deliverable:'Dashboard design prototype + component guide',
     dependency:'Internal design feedback',
     checklist:['Review executive dashboard examples','Create component variations','Test drill-through interaction','Validate mobile layout','Share design guide'],
-    activity:['Today · KPI component variants prepared','workDay(-3)+' ·' Mobile layout tested','workDay(-5)+' ·' Initial prototype reviewed'],
+    activity:[workDay(0)+' · KPI component variants prepared',workDay(-3)+' · Mobile layout tested',workDay(-5)+' · Initial prototype reviewed'],
     comments:['Priya · Keep the visual system aligned with the enterprise portal.']
   },
   {
@@ -507,7 +507,7 @@ const seedWorkItems:WorkItem[]=[
     deliverable:'Portfolio case study PDF + dashboard walkthrough',
     dependency:'No confidential client data',
     checklist:['Define case-study problem','Create synthetic dataset','Build analysis notebook','Design executive dashboard','Write final case study'],
-    activity:['workDay(-3)+' ·' Problem statement drafted','workDay(-6)+' ·' Synthetic dataset outline created'],
+    activity:[workDay(-3)+' · Problem statement drafted',workDay(-6)+' · Synthetic dataset outline created'],
     comments:[]
   },
   {
@@ -517,7 +517,7 @@ const seedWorkItems:WorkItem[]=[
     deliverable:'SQL pattern library + examples',
     dependency:'Peer review completed',
     checklist:['Join pattern examples','Deduplication patterns','Reconciliation examples','Comment and document','Publish to learning hub'],
-    activity:['workDay(-4)+' ·' Published to Learning Hub','workDay(-5)+' ·' Peer review completed','workDay(-7)+' ·' Examples finalized'],
+    activity:[workDay(-4)+' · Published to Learning Hub',workDay(-5)+' · Peer review completed',workDay(-7)+' · Examples finalized'],
     comments:['Rohan · Good reusable reference for new analysts.']
   }
 ];
@@ -721,12 +721,12 @@ function Attendance({notify}:{notify:(s:string)=>void}){
     </section>
   </>;
 }
-function Leave({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="TIME OFF" title="Leave & Holidays" sub="Manage leave requests, balances and the company holiday calendar." action={<button className="primary" onClick={()=>notify('Leave request form opened')}><Plus size={16}/> Request leave</button>}/><div className="leavecards">{[['18.5','Annual leave','days available'],['07.0','Sick leave','days available'],['02','Pending requests','awaiting approval']].map((x,i)=><div className="stat" key={i}><span>{x[1]}</span><strong>{x[0]}</strong><small>{x[2]}</small></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Requests</h2><p>Your recent leave activity</p></div></div>{[['Oct 05 – Oct 06','Annual leave','2 days','Pending'],['Aug 19','Sick leave','1 day','Approved'],['Jul 11 – Jul 12','Annual leave','2 days','Approved']].map((x,i)=><div className="leave-row" key={i}><div><b>{x[0]}</b><span>{x[1]}</span></div><strong>{x[2]}</strong><label className={x[3].toLowerCase()}>{x[3]}</label></div>)}</section></>}
+function Leave({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="TIME OFF" title="Leave & Holidays" sub="Manage leave requests, balances and the company holiday calendar." action={<button className="primary" onClick={()=>notify('Leave request form opened')}><Plus size={16}/> Request leave</button>}/><div className="leavecards">{[['18.5','Annual leave','days available'],['07.0','Sick leave','days available'],['02','Pending requests','awaiting approval']].map((x,i)=><div className="stat" key={i}><span>{x[1]}</span><strong>{x[0]}</strong><small>{x[2]}</small></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Requests</h2><p>Your recent leave activity</p></div></div>{[[workDay(2)+' – '+workDay(3),'Annual leave','2 days','Pending'],[workDay(-45),'Sick leave','1 day','Approved'],[workDay(-84)+' – '+workDay(-83),'Annual leave','2 days','Approved']].map((x,i)=><div className="leave-row" key={i}><div><b>{x[0]}</b><span>{x[1]}</span></div><strong>{x[2]}</strong><label className={x[3].toLowerCase()}>{x[3]}</label></div>)}</section></>}
 function Documents({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="KNOWLEDGE HUB" title="Documents" sub="Policies, project files and company resources in one place." action={<button className="primary" onClick={()=>notify('Document upload opened')}><Plus size={16}/> Upload</button>}/><div className="docgrid">{[['Company Policy Handbook','Policies','PDF','2.4 MB'],['Project Charter — Analytics Platform','Projects','PDF','1.8 MB'],['Employee Benefits Guide','HR','PDF','950 KB'],['Data Security Standards','Compliance','PDF','3.1 MB'],['Q3 Business Review','Reports','PPTX','5.6 MB'],['Client Delivery Checklist','Templates','DOCX','420 KB']].map((d,i)=><div className="doc" key={i}><div className="fileicon"><FileText size={22}/></div><div><b>{d[0]}</b><span>{d[1]} · {d[2]} · {d[3]}</span></div><button className="iconbtn" onClick={()=>notify(d[0]+' download requested')}><Download size={17}/></button></div>)}</div></>}
 function Calendar(){const[current,setCurrent]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1));const year=current.getFullYear(),month=current.getMonth();const first=(new Date(year,month,1).getDay()+6)%7;const days=new Date(year,month+1,0).getDate();const prev=()=>setCurrent(new Date(year,month-1,1));const next=()=>setCurrent(new Date(year,month+1,1));const label=current.toLocaleDateString('en-US',{month:'long',year:'numeric'});return <><PageTitle eyebrow="PLANNING" title="Calendar" sub="Meetings, milestones and company events."/><div className="calendar-panel panel"><div className="month"><button onClick={prev}>‹</button><h2>{label}</h2><button onClick={next}>›</button></div><div className="week">{['MON','TUE','WED','THU','FRI','SAT','SUN'].map(x=><span key={x}>{x}</span>)}{Array.from({length:first+days},(_,i)=>{const day=i-first+1;if(day<1)return <div className="empty-day" key={'e'+i}></div>;const today=new Date();const isToday=day===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();return <div className={isToday?'today':''} key={day}><b>{day}</b>{[2,8,14,21,30].includes(day)&&<small>Meeting</small>}</div>})}</div></div></>}
 function Announcements({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="COMPANY NEWS" title="Announcements" sub="Stay current with company updates and important notices."/><div className="announcements">{[['Annual strategy town hall','Leadership','Sep 29','Join us for the FY27 strategy and operating priorities town hall.'],['Security awareness month','IT & Security','Sep 25','Mandatory security refresher training is now available in the learning hub.'],['New analytics practice launch','Business Update','Sep 22','Our new Decision Intelligence practice is now live across three regions.']].map((a,i)=><article className="announcement" key={i}><div className="annicon">{i===0?'★':i===1?'✓':'↗'}</div><div><label>{a[1]} · {a[2]}</label><h2>{a[0]}</h2><p>{a[3]}</p><button className="link" onClick={()=>notify(a[0]+' announcement opened')}>Read announcement <ArrowUpRight size={15}/></button></div></article>)}</div></>}
 function Performance({notify}:{notify:(s:string)=>void}){const cards:[string,string,string,any][]=[['FY27 Goals','4 active goals','72% complete',Target],['Quarterly review','Q3 review cycle','Submitted · Sep 26',FileCheck],['Feedback','3 feedback requests','1 awaiting response',MessageSquare],['Growth plan','Analytics leadership track','In progress',TrendingUp]];return <><PageTitle eyebrow="PEOPLE & PERFORMANCE" title="Performance" sub="Goals, feedback cycles and growth progress in one place." action={<button className="primary" onClick={()=>notify('Goal editor opened')}><Plus size={16}/> Add goal</button>}/><div className="business-grid">{cards.map(([a,b,d,I],i)=><div className="business-card" key={i}><div className="business-icon">{React.createElement(I,{size:20})}</div><span>{a}</span><h2>{b}</h2><p>{d}</p><button className="link" onClick={()=>notify(String(a)+' opened')}>Open <ArrowUpRight size={14}/></button></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Current goals</h2><p>FY27 objectives aligned to your team priorities</p></div></div>{[['Improve data quality automation','Analytics Platform','85%'],['Deliver risk dashboard refresh','Risk Analytics','62%'],['Complete advanced SQL learning path','Personal development','40%']].map((g,i)=><div className="goal-row" key={i}><div><b>{g[0]}</b><span>{g[1]}</span></div><strong>{g[2]}</strong><div className="progress"><i style={{width:g[2]}}></i></div></div>)}</section></>}
-function Learning({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="LEARNING & DEVELOPMENT" title="Learning Hub" sub="Courses, certifications and mandatory training assigned to you."/><div className="business-grid">{[['Advanced SQL for Analytics','Learning path','8 modules · 72% complete'],['Information Security','Mandatory','Due Oct 04 · 25 min'],['Leadership Essentials','Recommended','12 lessons · 18% complete'],['Power BI Advanced','Certification','Exam readiness · 64%']].map((x,i)=><div className="business-card course" key={i}><div className="course-top"><span>{x[1]}</span><b>{i===0?'72%':i===3?'64%':'New'}</b></div><h2>{x[0]}</h2><p>{x[2]}</p><div className="progress"><i style={{width:i===0?'72%':i===3?'64%':i===1?'10%':'18%'}}></i></div><button className="primary" onClick={()=>notify('Course opened')}>{i===1?'Start training':'Continue'}</button></div>)}</div></>}
+function Learning({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="LEARNING & DEVELOPMENT" title="Learning Hub" sub="Courses, certifications and mandatory training assigned to you."/><div className="business-grid">{[['Advanced SQL for Analytics','Learning path','8 modules · 72% complete'],['Information Security','Mandatory','Due '+workDay(1)+' · 25 min'],['Leadership Essentials','Recommended','12 lessons · 18% complete'],['Power BI Advanced','Certification','Exam readiness · 64%']].map((x,i)=><div className="business-card course" key={i}><div className="course-top"><span>{x[1]}</span><b>{i===0?'72%':i===3?'64%':'New'}</b></div><h2>{x[0]}</h2><p>{x[2]}</p><div className="progress"><i style={{width:i===0?'72%':i===3?'64%':i===1?'10%':'18%'}}></i></div><button className="primary" onClick={()=>notify('Course opened')}>{i===1?'Start training':'Continue'}</button></div>)}</div></>}
 function Expenses({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="FINANCE & REIMBURSEMENTS" title="Expenses" sub="Submit, track and review business expenses and reimbursements." action={<button className="primary" onClick={()=>notify('Expense form opened')}><Plus size={16}/> New expense</button>}/><div className="stats">{[['This month','₹18,420','6 claims'],['Pending','₹7,850','2 approvals'],['Reimbursed','₹10,570','4 paid'],['Policy limit','₹50,000','Monthly']].map((x,i)=><div className="stat" key={i}><span>{x[0]}</span><strong>{x[1]}</strong><small>{x[2]}</small></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Recent claims</h2><p>Expense submissions and reimbursement status</p></div></div>{[['EXP-24091','Client meeting travel','₹4,280','Approved'],['EXP-24088','Team lunch','₹3,570','Pending'],['EXP-24074','Office supplies','₹1,820','Reimbursed'],['EXP-24061','Taxi · client visit','₹1,440','Reimbursed']].map((e,i)=><div className="expense-row" key={i}><div><b>{e[0]}</b><span>{e[1]}</span></div><strong>{e[2]}</strong><label className={e[3].toLowerCase()}>{e[3]}</label><button className="iconbtn" onClick={()=>notify(e[0]+' details opened')}><ChevronRight size={16}/></button></div>)}</section></>}
 function Assets({notify}:{notify:(s:string)=>void}){const assets:[string,string,string,string,any][]=[['ThinkPad T490','Laptop','DPA-LT-0248','Assigned',Laptop2],['Samsung F36','Mobile','DPA-MB-0912','Assigned',Phone],['Microsoft 365','Software','LIC-88421','Active',Globe2],['VPN Access','Security','SEC-12048','Active',ShieldCheck]];return <><PageTitle eyebrow="IT & WORKPLACE" title="My Assets" sub="Company devices, software licenses and assigned workplace equipment." action={<button className="primary" onClick={()=>notify('Asset request opened')}><Plus size={16}/> Request asset</button>}/><div className="business-grid">{assets.map((x,i)=>{const I=x[4];return <div className="business-card asset-card" key={i}><div className="business-icon"><I size={20}/></div><span>{x[1]}</span><h2>{x[0]}</h2><p>{x[2]}</p><label className="asset-status">{x[3]}</label><button className="link" onClick={()=>notify(String(x[0])+' details opened')}>View details <ArrowUpRight size={14}/></button></div>})}</div></>}
 function Support({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="HELP CENTER" title="Support" sub="Get help with technology, HR, facilities and workplace services."/><div className="supportgrid">{[['IT Service Desk','Laptop, access, software and connectivity','Create ticket'],['People & HR','Benefits, payroll, leave and employee support','Contact HR'],['Facilities','Office access, seating and workplace services','Request help']].map(x=><div className="supportcard"><Headphones size={24}/><h2>{x[0]}</h2><p>{x[1]}</p><button className="primary" onClick={()=>notify(x[2]+' opened')}>{x[2]} <ArrowUpRight size={15}/></button></div>)}</div><section className="panel"><div className="panel-head"><div><h2>My tickets</h2><p>Recent support requests</p></div></div>{[['IT-10482','VPN access renewal','IT Service Desk','Open'],['HR-09812','Leave policy clarification','People & HR','Resolved']].map(t=><div className="ticket"><b>{t[0]}</b><span>{t[1]}</span><span>{t[2]}</span><label>{t[3]}</label></div>)}</section></>}
