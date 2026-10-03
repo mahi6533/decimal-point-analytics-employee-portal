@@ -28,6 +28,10 @@ const nav:[Section,string,any][]=[
 const dayBucket=Math.floor(Date.now()/(5*24*60*60*1000));
 const today=new Date();
 const dateLabel=(d:Date)=>d.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
+const longDateLabel=(d:Date)=>d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric',year:'numeric'});
+const workDay=(offset:number)=>{const d=new Date();d.setDate(d.getDate()+offset);return dateLabel(d)};
+const longWorkDay=(offset:number)=>{const d=new Date();d.setDate(d.getDate()+offset);return longDateLabel(d)};
+function useLiveClock(){const[now,setNow]=useState(()=>new Date());useEffect(()=>{const id=window.setInterval(()=>setNow(new Date()),1000);return()=>window.clearInterval(id)},[]);return now}
 const taskDue=(offset:number)=>{const d=new Date(today);d.setDate(d.getDate()+offset+((dayBucket%3)*2));return dateLabel(d)};
 const progress=(base:number)=>Math.min(99,base+((dayBucket%5)*3));
 const tasks=[['Client data quality review','Analytics Platform',dayBucket%2===0?'Today':taskDue(2),'High',progress(72)+'%'],['Quarterly dashboard refresh','Risk Analytics',taskDue(4),'Medium',progress(41)+'%'],['Model validation pack','Quant Research',taskDue(7),'High',progress(18)+'%'],['Knowledge base update','Internal',taskDue(10),'Low',progress(86)+'%']];
@@ -46,6 +50,13 @@ function App(){
   const[noticeOpen,setNoticeOpen]=useState(false);
   const[profileOpen,setProfileOpen]=useState(false);
   const[action,setAction]=useState<string|null>(null);
+  const now=useLiveClock();
+  const[loginAt]=useState(()=>sessionStorage.getItem('dpa_login_at')||new Date().toISOString());
+  useEffect(()=>{if(!sessionStorage.getItem('dpa_login_at'))sessionStorage.setItem('dpa_login_at',loginAt)},[loginAt]);
+  const sessionSeconds=Math.max(0,Math.floor((now.getTime()-new Date(loginAt).getTime())/1000));
+  const hh=String(Math.floor(sessionSeconds/3600)).padStart(2,'0');
+  const mm=String(Math.floor((sessionSeconds%3600)/60)).padStart(2,'0');
+  const ss=String(sessionSeconds%60).padStart(2,'0');
 
   useEffect(()=>{
     let active=true;
@@ -166,6 +177,8 @@ function App(){
         </div>
 
         <div className="head-actions">
+          <div className="live-clock"><Clock3 size={15}/><div><b>{now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})}</b><span>{now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span></div></div>
+          <div className="session-pill"><span>SESSION</span><b>{hh}:{mm}:{ss}</b></div>
           <button className="command-trigger" onClick={()=>setCommandOpen(true)}>
             <Search size={16}/><span>Search workspace...</span><kbd>⌘ K</kbd>
           </button>
