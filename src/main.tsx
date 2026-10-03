@@ -442,7 +442,7 @@ type WorkItem={
 const seedWorkItems:WorkItem[]=[
   {
     id:'WK-1048',title:'Client data quality review',project:'Analytics Platform',type:'Delivery',client:'Global Banking Client',
-    priority:'High',status:'In progress',progress:72,due:'Today',estimate:'6h',logged:'4h 20m',sprint:'Sprint 24',owner:'Mahesh Shirsath',
+    priority:'High',status:'In progress',progress:72,due:workDay(0),estimate:'6h',logged:'4h 20m',sprint:'Sprint 24',owner:'Mahesh Shirsath',
     description:'Validate source-to-target data quality for the client analytics feed. Reconcile exception records, document root causes, and prepare the release-readiness note for the project manager.',
     deliverable:'DQ validation workbook + release-readiness summary',
     dependency:'Client source extract v7.2',
@@ -452,72 +452,72 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1051',title:'Quarterly dashboard refresh',project:'Risk Analytics',type:'Delivery',client:'Internal Risk Office',
-    priority:'Medium',status:'In progress',progress:41,due:'Oct 06',estimate:'10h',logged:'3h 35m',sprint:'Sprint 24',owner:'Mahesh Shirsath',
+    priority:'Medium',status:'In progress',progress:41,due:workDay(3),estimate:'10h',logged:'3h 35m',sprint:'Sprint 24',owner:'Mahesh Shirsath',
     description:'Refresh the executive risk dashboard with the latest quarter-end metrics, validate measures against the finance pack, and prepare the review version for leadership.',
     deliverable:'Power BI dashboard v4 + metric reconciliation sheet',
     dependency:'Q3 finance pack',
     checklist:['Load quarter-end dataset','Refresh semantic model','Validate KPI calculations','Review dashboard layout','Publish review build'],
-    activity:['Yesterday · Q3 dataset loaded','Sep 29 · KPI reconciliation started','Sep 26 · Review comments incorporated'],
+    activity:['Yesterday · Q3 dataset loaded','workDay(-4) + ' ·' KPI reconciliation started','workDay(-7) + ' ·' Review comments incorporated'],
     comments:['Priya · Use the new risk-severity definition from the September policy note.']
   },
   {
     id:'WK-1058',title:'Model validation pack',project:'Quant Research',type:'Delivery',client:'Research Practice',
-    priority:'High',status:'In review',progress:64,due:'Oct 08',estimate:'8h',logged:'5h 10m',sprint:'Sprint 24',owner:'Mahesh Shirsath',
+    priority:'High',status:'In review',progress:64,due:workDay(5),estimate:'8h',logged:'5h 10m',sprint:'Sprint 24',owner:'Mahesh Shirsath',
     description:'Complete the model validation pack for the latest scoring model, covering stability metrics, drift observations, sample-level exceptions, and sign-off evidence.',
     deliverable:'Validation memo + evidence annexure',
     dependency:'Model v2.3 output snapshot',
     checklist:['Run stability checks','Review drift indicators','Investigate sample exceptions','Prepare validation memo','Submit for peer review'],
-    activity:['Today · Validation memo updated','Sep 29 · Drift analysis complete','Sep 27 · Sample review finished'],
+    activity:['Today · Validation memo updated','workDay(-4) + ' ·' Drift analysis complete','workDay(-6) + ' ·' Sample review finished'],
     comments:['Ananya · Please call out any material drift separately in the executive summary.']
   },
   {
     id:'WK-1062',title:'Knowledge base update',project:'Internal Analytics Enablement',type:'Delivery',client:'Decimal Point Analytics',
-    priority:'Low',status:'Backlog',progress:18,due:'Oct 12',estimate:'4h',logged:'45m',sprint:'Sprint 25',owner:'Mahesh Shirsath',
+    priority:'Low',status:'Backlog',progress:18,due:workDay(9),estimate:'4h',logged:'45m',sprint:'Sprint 25',owner:'Mahesh Shirsath',
     description:'Turn repeated analytics support questions into concise internal knowledge articles with examples, troubleshooting steps, and ownership guidance.',
     deliverable:'3 published knowledge articles',
     dependency:'SME review from Data Engineering',
     checklist:['Collect recurring questions','Draft article 1','Draft article 2','Draft article 3','Submit SME review'],
-    activity:['Sep 30 · Topic list created','Sep 28 · Stakeholder interview completed'],
+    activity:['workDay(-3) + ' ·' Topic list created','workDay(-5) + ' ·' Stakeholder interview completed'],
     comments:[]
   },
   {
     id:'SH-2101',title:'Internal analytics automation sprint',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Innovation Lab',
-    priority:'High',status:'In progress',progress:58,due:'Oct 05',estimate:'7h',logged:'3h 50m',sprint:'Innovation Sprint 03',owner:'Mahesh Shirsath',
+    priority:'High',status:'In progress',progress:58,due:workDay(2),estimate:'7h',logged:'3h 50m',sprint:'Innovation Sprint 03',owner:'Mahesh Shirsath',
     description:'Prototype a small automation that converts recurring CSV quality checks into a repeatable review report. This is an internal innovation item and should remain separate from billable client delivery.',
     deliverable:'Automation prototype + sample output report',
     dependency:'Approved sample CSV dataset',
     checklist:['Define input/output contract','Create validation rules','Build repeatable report generation','Test against sample datasets','Demo to analytics lead'],
-    activity:['10:05 · Rule set for null/duplicate checks drafted','Yesterday · Prototype folder created','Sep 29 · Idea approved for innovation sprint'],
+    activity:['10:05 · Rule set for null/duplicate checks drafted','Yesterday · Prototype folder created','workDay(-4) + ' ·' Idea approved for innovation sprint'],
     comments:['Mahesh · Keep the prototype generic so it can be reused by other teams.']
   },
   {
     id:'SH-2104',title:'Power BI dashboard polish lab',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Innovation Lab',
-    priority:'Medium',status:'In review',progress:76,due:'Oct 07',estimate:'5h',logged:'3h 40m',sprint:'Innovation Sprint 03',owner:'Mahesh Shirsath',
+    priority:'Medium',status:'In review',progress:76,due:workDay(4),estimate:'5h',logged:'3h 40m',sprint:'Innovation Sprint 03',owner:'Mahesh Shirsath',
     description:'Experiment with a more executive-friendly dashboard layout, consistent KPI cards, drill-through patterns, and a compact mobile experience for internal reporting.',
     deliverable:'Dashboard design prototype + component guide',
     dependency:'Internal design feedback',
     checklist:['Review executive dashboard examples','Create component variations','Test drill-through interaction','Validate mobile layout','Share design guide'],
-    activity:['Today · KPI component variants prepared','Sep 30 · Mobile layout tested','Sep 28 · Initial prototype reviewed'],
+    activity:['Today · KPI component variants prepared','workDay(-3) + ' ·' Mobile layout tested','workDay(-5) + ' ·' Initial prototype reviewed'],
     comments:['Priya · Keep the visual system aligned with the enterprise portal.']
   },
   {
     id:'SH-2110',title:'Personal analytics portfolio case study',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Professional Development',
-    priority:'Low',status:'Backlog',progress:22,due:'Oct 15',estimate:'6h',logged:'1h 10m',sprint:'Personal Build',owner:'Mahesh Shirsath',
+    priority:'Low',status:'Backlog',progress:22,due:workDay(12),estimate:'6h',logged:'1h 10m',sprint:'Personal Build',owner:'Mahesh Shirsath',
     description:'Build a sanitized case study showing an end-to-end analytics workflow: problem framing, data quality, exploration, KPI design, validation, and executive storytelling.',
     deliverable:'Portfolio case study PDF + dashboard walkthrough',
     dependency:'No confidential client data',
     checklist:['Define case-study problem','Create synthetic dataset','Build analysis notebook','Design executive dashboard','Write final case study'],
-    activity:['Sep 30 · Problem statement drafted','Sep 27 · Synthetic dataset outline created'],
+    activity:['workDay(-3) + ' ·' Problem statement drafted','workDay(-6) + ' ·' Synthetic dataset outline created'],
     comments:[]
   },
   {
     id:'SH-2116',title:'SQL performance pattern library',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Learning Guild',
-    priority:'Low',status:'Completed',progress:100,due:'Sep 29',estimate:'3h',logged:'3h 05m',sprint:'Innovation Sprint 02',owner:'Mahesh Shirsath',
+    priority:'Low',status:'Completed',progress:100,due:workDay(-4),estimate:'3h',logged:'3h 05m',sprint:'Innovation Sprint 02',owner:'Mahesh Shirsath',
     description:'Create a reusable library of practical SQL patterns for joins, deduplication, exception analysis, and reconciliation workflows commonly used by analytics teams.',
     deliverable:'SQL pattern library + examples',
     dependency:'Peer review completed',
     checklist:['Join pattern examples','Deduplication patterns','Reconciliation examples','Comment and document','Publish to learning hub'],
-    activity:['Sep 29 · Published to Learning Hub','Sep 28 · Peer review completed','Sep 26 · Examples finalized'],
+    activity:['workDay(-4) + ' ·' Published to Learning Hub','workDay(-5) + ' ·' Peer review completed','workDay(-7) + ' ·' Examples finalized'],
     comments:['Rohan · Good reusable reference for new analysts.']
   }
 ];
@@ -529,7 +529,7 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
   const[filter,setFilter]=useState<'all'|'delivery'|'side'|'due'|'active'|'completed'>('all');
   const[showCreate,setShowCreate]=useState(false);
   const[comment,setComment]=useState('');
-  const[newTask,setNewTask]=useState({title:'',project:'Internal Analytics',priority:'Medium' as WorkItem['priority'],due:'Oct 20',type:'Side Hustle' as WorkItem['type'],description:''});
+  const[newTask,setNewTask]=useState({title:'',project:'Internal Analytics',priority:'Medium' as WorkItem['priority'],due:workDay(17),type:'Side Hustle' as WorkItem['type'],description:''});
 
   useEffect(()=>{localStorage.setItem('dpa_work_items',JSON.stringify(items));},[items]);
 
