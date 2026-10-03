@@ -279,7 +279,7 @@ function ActionCenter({title,onClose,notify}:{title:string,onClose:()=>void,noti
 }
 
 function PageTitle({eyebrow,title,sub,action}:{eyebrow:string,title:string,sub:string,action?:React.ReactNode}){return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{sub}</p></div>{action}</div>}
-function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Section)=>void}){
+function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Section)=>void}){const now=useLiveClock();
   const attendanceKey='dpa_attendance_'+new Date().toISOString().slice(0,10);
   const[attendanceMarked,setAttendanceMarked]=useState(()=>localStorage.getItem(attendanceKey)==='1');
   const[period,setPeriod]=useState('This month');
@@ -289,7 +289,7 @@ function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Sec
   return <>
     <section className="dashboard-hero">
       <div className="hero-copy">
-        <div className="eyebrow">EMPLOYEE COMMAND CENTER · SEPTEMBER 30, 2026</div>
+        <div className="eyebrow">EMPLOYEE COMMAND CENTER · {longDateLabel(now)}</div>
         <h1>Good morning, Mahesh.</h1>
         <p>One workspace for delivery, people operations, finance, learning and workplace services.</p>
         <div className="hero-actions">
@@ -337,8 +337,8 @@ function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Sec
         <div className="panel-head"><div><h2>Priority queue</h2><p>Actions that are time-sensitive or blocking delivery</p></div><button className="link" onClick={()=>setSection('My Work')}>View work queue <ChevronRight size={15}/></button></div>
         {([
           ['Client data quality review','Analytics Platform','Due today','High','72%',AlertTriangle],
-          ['Information security training','Learning Hub','Due Oct 04','Required','10%',ShieldCheck],
-          ['Quarterly dashboard refresh','Risk Analytics','Due Oct 06','Medium','41%',BarChart3],
+          ['Information security training','Learning Hub','Due '+workDay(1),'Required','10%',ShieldCheck],
+          ['Quarterly dashboard refresh','Risk Analytics','Due '+workDay(3),'Medium','41%',BarChart3],
           ['October leave request','People Operations','Pending approval','Normal','—',CalendarDays]
         ] as [string,string,string,string,string,any][]).map(([title,meta,due,priority,pct,Icon],i)=><button className="attention-row" key={i} onClick={()=>notify(String(title)+' opened')}>
           <div className="attention-icon">{React.createElement(Icon as any,{size:16})}</div>
@@ -378,7 +378,7 @@ function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Sec
           ['10:30 AM','Client steering sync','Analytics Platform','30 min'],
           ['02:00 PM','Risk dashboard review','Risk Analytics','45 min'],
           ['Tomorrow','1:1 with Rohan','People · Manager','30 min'],
-          ['Oct 04','Security refresher deadline','Learning Hub','Required']
+          [workDay(1),'Security refresher deadline','Learning Hub','Required']
         ].map((x,i)=><div className="upcoming-row" key={i}><time>{x[0]}</time><div><b>{x[1]}</b><span>{x[2]}</span></div><small>{x[3]}</small></div>)}
       </section>
     </div>
@@ -388,10 +388,10 @@ function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Sec
       <div className="portfolio-table">
         <div className="portfolio-head"><span>Program</span><span>Workstream</span><span>Health</span><span>Progress</span><span>Owner</span><span>Next milestone</span></div>
         {[
-          ['Analytics Platform','Data quality & automation','On track','92%','Mahesh','Oct 03'],
-          ['Risk Analytics','Executive dashboard','On track','76%','Mahesh','Oct 06'],
-          ['Client Intelligence','Research pipeline','Watch','58%','Priya Nair','Oct 10'],
-          ['Enterprise Data Hub','Data engineering','Planning','34%','Vikram Mehta','Oct 18']
+          ['Analytics Platform','Data quality & automation','On track','92%','Mahesh',workDay(0)],
+          ['Risk Analytics','Executive dashboard','On track','76%','Mahesh',workDay(3)],
+          ['Client Intelligence','Research pipeline','Watch','58%','Priya Nair',workDay(7)],
+          ['Enterprise Data Hub','Data engineering','Planning','34%','Vikram Mehta',workDay(15)]
         ].map((p,i)=><div className="portfolio-row" key={i}><div><b>{p[0]}</b><span>{p[1]}</span></div><span className={'health '+String(p[2]).toLowerCase().replace(' ','-')}>{p[2]}</span><div className="table-progress"><i style={{width:p[3]}}></i></div><strong>{p[3]}</strong><span>{p[4]}</span><span>{p[5]}</span></div>)}
       </div>
     </section>
@@ -400,9 +400,9 @@ function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Sec
       <section className="panel compact-panel">
         <div className="panel-head"><div><h2>Latest announcements</h2><p>Company-wide updates</p></div><button className="link" onClick={()=>setSection('Announcements')}>View all</button></div>
         {[
-          ['Annual strategy town hall','Leadership','Sep 29'],
-          ['Security awareness month','IT & Security','Sep 25'],
-          ['New analytics practice launch','Business Update','Sep 22']
+          ['Annual strategy town hall','Leadership',workDay(-4)],
+          ['Security awareness month','IT & Security',workDay(-8)],
+          ['New analytics practice launch','Business Update',workDay(-11)]
         ].map((x,i)=><button className="news-row" key={i} onClick={()=>setSection('Announcements')}><div className="news-num">0{i+1}</div><div><b>{x[0]}</b><span>{x[1]}</span></div><small>{x[2]}</small><ArrowUpRight size={14}/></button>)}
       </section>
       <section className="panel compact-panel">
@@ -678,23 +678,23 @@ function SettingsPage({notify}:{notify:(s:string)=>void}){
 }
 
 function Directory({query,notify}:{query:string,notify:(s:string)=>void}){let d=people.filter(p=>p.join(' ').toLowerCase().includes(query.toLowerCase()));return <><PageTitle eyebrow="PEOPLE & TEAMS" title="Company Directory" sub="Find colleagues, teams and business contacts across Decimal Point Analytics."/><div className="directory">{d.map((p,i)=><div className="person" key={i}><div className="personavatar">{p[0]}</div><div><b>{p[1]}</b><span>{p[2]}</span><small><MapPin size={13}/>{p[3]}</small></div><button className="iconbtn" onClick={()=>notify(p[1]+' contact opened')}><Mail size={17}/></button></div>)}</div></>}
-function Attendance({notify}:{notify:(s:string)=>void}){
+function Attendance({notify}:{notify:(s:string)=>void}){const now=useLiveClock();
   const key='dpa_attendance_session_'+new Date().toISOString().slice(0,10);
   const[checkedIn,setCheckedIn]=useState(()=>localStorage.getItem(key)==='1');
   const[checkInAt,setCheckInAt]=useState(()=>localStorage.getItem(key+'_time')||'09:18 AM');
   const toggle=()=>{
     if(!checkedIn){
       const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-      localStorage.setItem(key,'1');localStorage.setItem(key+'_time',t);setCheckInAt(t);setCheckedIn(true);notify('Attendance checked in');
+      localStorage.setItem(key,'1');localStorage.setItem(key+'_time',t);localStorage.setItem(key+'_checked_at',new Date().toISOString());setCheckInAt(t);setCheckedIn(true);notify('Attendance checked in');
     }else{
-      localStorage.removeItem(key);notify('Attendance checked out');setCheckedIn(false);
+      localStorage.removeItem(key);localStorage.removeItem(key+'_checked_at');notify('Attendance checked out');setCheckedIn(false);
     }
   };
-  return <><PageTitle eyebrow="TIME & ATTENDANCE" title="Attendance" sub="Your working hours, presence and monthly timesheet." action={<button className="primary" onClick={()=>notify('Attendance export opened')}><Download size={16}/> Export</button>}/><div className="attendance-grid"><div className="panel clockcard"><span>Today's status</span><strong>{checkedIn?'08:42:18':'00:00:00'}</strong><small>Wednesday · Sep 30</small><div className="clockline"><span>{checkedIn?checkInAt:'Not checked in'}</span><span>06:00 PM expected</span></div><button className="primary" onClick={toggle}>{checkedIn?'Check out':'Check in'}</button></div><div className="panel"><div className="panel-head"><div><h2>September summary</h2><p>Current month</p></div><button className="iconbtn" onClick={()=>notify('Attendance options opened')}><MoreHorizontal size={18}/></button></div><div className="attstats"><div><b>19</b><span>Present</span></div><div><b>01</b><span>Leave</span></div><div><b>00</b><span>Absent</span></div><div><b>08h 42m</b><span>Avg. hours</span></div></div></div></div><section className="panel"><div className="panel-head"><div><h2>Recent attendance</h2><p>Latest submitted entries</p></div></div>{['Sep 30','Sep 29','Sep 28','Sep 25'].map((d,i)=><div className="attrow" key={d}><b>{d}</b><span>Present</span><span>09:{18-i*3} AM</span><span>06:{2+i*4} PM</span><strong>{i===0?'08h 42m':'08h 3'+i+'m'}</strong></div>)}</section></>;
+  return <><PageTitle eyebrow="TIME & ATTENDANCE" title="Attendance" sub="Your working hours, presence and monthly timesheet." action={<button className="primary" onClick={()=>notify('Attendance export opened')}><Download size={16}/> Export</button>}/><div className="attendance-grid"><div className="panel clockcard"><span>Today's status</span><strong>{checkedIn?`${String(Math.floor((now.getTime()-new Date(localStorage.getItem(key+'_checked_at')||now.toISOString()).getTime())/3600000)).padStart(2,'0')}:${String(Math.floor(((now.getTime()-new Date(localStorage.getItem(key+'_checked_at')||now.toISOString()).getTime())/60000)%60)).padStart(2,'0')}:${String(Math.floor(((now.getTime()-new Date(localStorage.getItem(key+'_checked_at')||now.toISOString()).getTime())/1000)%60)).padStart(2,'0')}`:'00:00:00'}</strong><small>{longDateLabel(now)}</small><div className="clockline"><span>{checkedIn?checkInAt:'Not checked in'}</span><span>06:00 PM expected</span></div><button className="primary" onClick={toggle}>{checkedIn?'Check out':'Check in'}</button></div><div className="panel"><div className="panel-head"><div><h2>September summary</h2><p>Current month</p></div><button className="iconbtn" onClick={()=>notify('Attendance options opened')}><MoreHorizontal size={18}/></button></div><div className="attstats"><div><b>19</b><span>Present</span></div><div><b>01</b><span>Leave</span></div><div><b>00</b><span>Absent</span></div><div><b>08h 42m</b><span>Avg. hours</span></div></div></div></div><section className="panel"><div className="panel-head"><div><h2>Recent attendance</h2><p>Latest submitted entries</p></div></div>{['Sep 30','Sep 29','Sep 28','Sep 25'].map((d,i)=><div className="attrow" key={d}><b>{d}</b><span>Present</span><span>09:{18-i*3} AM</span><span>06:{2+i*4} PM</span><strong>{i===0?'08h 42m':'08h 3'+i+'m'}</strong></div>)}</section></>;
 }
 function Leave({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="TIME OFF" title="Leave & Holidays" sub="Manage leave requests, balances and the company holiday calendar." action={<button className="primary" onClick={()=>notify('Leave request form opened')}><Plus size={16}/> Request leave</button>}/><div className="leavecards">{[['18.5','Annual leave','days available'],['07.0','Sick leave','days available'],['02','Pending requests','awaiting approval']].map((x,i)=><div className="stat" key={i}><span>{x[1]}</span><strong>{x[0]}</strong><small>{x[2]}</small></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Requests</h2><p>Your recent leave activity</p></div></div>{[['Oct 05 – Oct 06','Annual leave','2 days','Pending'],['Aug 19','Sick leave','1 day','Approved'],['Jul 11 – Jul 12','Annual leave','2 days','Approved']].map((x,i)=><div className="leave-row" key={i}><div><b>{x[0]}</b><span>{x[1]}</span></div><strong>{x[2]}</strong><label className={x[3].toLowerCase()}>{x[3]}</label></div>)}</section></>}
 function Documents({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="KNOWLEDGE HUB" title="Documents" sub="Policies, project files and company resources in one place." action={<button className="primary" onClick={()=>notify('Document upload opened')}><Plus size={16}/> Upload</button>}/><div className="docgrid">{[['Company Policy Handbook','Policies','PDF','2.4 MB'],['Project Charter — Analytics Platform','Projects','PDF','1.8 MB'],['Employee Benefits Guide','HR','PDF','950 KB'],['Data Security Standards','Compliance','PDF','3.1 MB'],['Q3 Business Review','Reports','PPTX','5.6 MB'],['Client Delivery Checklist','Templates','DOCX','420 KB']].map((d,i)=><div className="doc" key={i}><div className="fileicon"><FileText size={22}/></div><div><b>{d[0]}</b><span>{d[1]} · {d[2]} · {d[3]}</span></div><button className="iconbtn" onClick={()=>notify(d[0]+' download requested')}><Download size={17}/></button></div>)}</div></>}
-function Calendar(){const[current,setCurrent]=useState(new Date(2026,8,1));const year=current.getFullYear(),month=current.getMonth();const first=(new Date(year,month,1).getDay()+6)%7;const days=new Date(year,month+1,0).getDate();const prev=()=>setCurrent(new Date(year,month-1,1));const next=()=>setCurrent(new Date(year,month+1,1));const label=current.toLocaleDateString('en-US',{month:'long',year:'numeric'});return <><PageTitle eyebrow="PLANNING" title="Calendar" sub="Meetings, milestones and company events."/><div className="calendar-panel panel"><div className="month"><button onClick={prev}>‹</button><h2>{label}</h2><button onClick={next}>›</button></div><div className="week">{['MON','TUE','WED','THU','FRI','SAT','SUN'].map(x=><span key={x}>{x}</span>)}{Array.from({length:first+days},(_,i)=>{const day=i-first+1;if(day<1)return <div className="empty-day" key={'e'+i}></div>;const today=new Date(2026,8,30);const isToday=day===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();return <div className={isToday?'today':''} key={day}><b>{day}</b>{[2,8,14,21,30].includes(day)&&<small>Meeting</small>}</div>})}</div></div></>}
+function Calendar(){const[current,setCurrent]=useState(new Date(new Date().getFullYear(),new Date().getMonth(),1));const year=current.getFullYear(),month=current.getMonth();const first=(new Date(year,month,1).getDay()+6)%7;const days=new Date(year,month+1,0).getDate();const prev=()=>setCurrent(new Date(year,month-1,1));const next=()=>setCurrent(new Date(year,month+1,1));const label=current.toLocaleDateString('en-US',{month:'long',year:'numeric'});return <><PageTitle eyebrow="PLANNING" title="Calendar" sub="Meetings, milestones and company events."/><div className="calendar-panel panel"><div className="month"><button onClick={prev}>‹</button><h2>{label}</h2><button onClick={next}>›</button></div><div className="week">{['MON','TUE','WED','THU','FRI','SAT','SUN'].map(x=><span key={x}>{x}</span>)}{Array.from({length:first+days},(_,i)=>{const day=i-first+1;if(day<1)return <div className="empty-day" key={'e'+i}></div>;const today=new Date();const isToday=day===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();return <div className={isToday?'today':''} key={day}><b>{day}</b>{[2,8,14,21,30].includes(day)&&<small>Meeting</small>}</div>})}</div></div></>}
 function Announcements({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="COMPANY NEWS" title="Announcements" sub="Stay current with company updates and important notices."/><div className="announcements">{[['Annual strategy town hall','Leadership','Sep 29','Join us for the FY27 strategy and operating priorities town hall.'],['Security awareness month','IT & Security','Sep 25','Mandatory security refresher training is now available in the learning hub.'],['New analytics practice launch','Business Update','Sep 22','Our new Decision Intelligence practice is now live across three regions.']].map((a,i)=><article className="announcement" key={i}><div className="annicon">{i===0?'★':i===1?'✓':'↗'}</div><div><label>{a[1]} · {a[2]}</label><h2>{a[0]}</h2><p>{a[3]}</p><button className="link" onClick={()=>notify(a[0]+' announcement opened')}>Read announcement <ArrowUpRight size={15}/></button></div></article>)}</div></>}
 function Performance({notify}:{notify:(s:string)=>void}){const cards:[string,string,string,any][]=[['FY27 Goals','4 active goals','72% complete',Target],['Quarterly review','Q3 review cycle','Submitted · Sep 26',FileCheck],['Feedback','3 feedback requests','1 awaiting response',MessageSquare],['Growth plan','Analytics leadership track','In progress',TrendingUp]];return <><PageTitle eyebrow="PEOPLE & PERFORMANCE" title="Performance" sub="Goals, feedback cycles and growth progress in one place." action={<button className="primary" onClick={()=>notify('Goal editor opened')}><Plus size={16}/> Add goal</button>}/><div className="business-grid">{cards.map(([a,b,d,I],i)=><div className="business-card" key={i}><div className="business-icon">{React.createElement(I,{size:20})}</div><span>{a}</span><h2>{b}</h2><p>{d}</p><button className="link" onClick={()=>notify(String(a)+' opened')}>Open <ArrowUpRight size={14}/></button></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Current goals</h2><p>FY27 objectives aligned to your team priorities</p></div></div>{[['Improve data quality automation','Analytics Platform','85%'],['Deliver risk dashboard refresh','Risk Analytics','62%'],['Complete advanced SQL learning path','Personal development','40%']].map((g,i)=><div className="goal-row" key={i}><div><b>{g[0]}</b><span>{g[1]}</span></div><strong>{g[2]}</strong><div className="progress"><i style={{width:g[2]}}></i></div></div>)}</section></>}
 function Learning({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="LEARNING & DEVELOPMENT" title="Learning Hub" sub="Courses, certifications and mandatory training assigned to you."/><div className="business-grid">{[['Advanced SQL for Analytics','Learning path','8 modules · 72% complete'],['Information Security','Mandatory','Due Oct 04 · 25 min'],['Leadership Essentials','Recommended','12 lessons · 18% complete'],['Power BI Advanced','Certification','Exam readiness · 64%']].map((x,i)=><div className="business-card course" key={i}><div className="course-top"><span>{x[1]}</span><b>{i===0?'72%':i===3?'64%':'New'}</b></div><h2>{x[0]}</h2><p>{x[2]}</p><div className="progress"><i style={{width:i===0?'72%':i===3?'64%':i===1?'10%':'18%'}}></i></div><button className="primary" onClick={()=>notify('Course opened')}>{i===1?'Start training':'Continue'}</button></div>)}</div></>}
