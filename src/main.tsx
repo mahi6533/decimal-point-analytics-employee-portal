@@ -36,8 +36,9 @@ const tasks=[['Client data quality review','Analytics Platform',dateLabel(today)
 const people=[['AS','Ananya Shah','VP · Analytics','Mumbai'],['RK','Rohan Kulkarni','Senior Analyst','Pune'],['PN','Priya Nair','Project Manager','Bengaluru'],['VM','Vikram Mehta','Data Engineer','Mumbai'],['SI','Sneha Iyer','HR Business Partner','Pune'],['AD','Amit Deshmukh','Team Lead','Nashik']];
 const activities=[['09:42','Completed','Client data quality review'],['09:10','Updated','Quarterly dashboard refresh'],['Yesterday','Approved','Leave request · 2 days'],['Yesterday','Uploaded','Project charter v3.pdf']];
 function App(){
-  const[section,setSection]=useState<Section>('Overview');
+  const[section,setSection]=useState<Section>(()=>(localStorage.getItem('dpa_last_section') as Section)||'Overview');
   const[open,setOpen]=useState(false);
+  const[collapsed,setCollapsed]=useState(()=>localStorage.getItem('dpa_sidebar_collapsed')==='1');
   const[query,setQuery]=useState('');
   const[toast,setToast]=useState('');
   const[dbStatus,setDbStatus]=useState('checking');
@@ -48,9 +49,14 @@ function App(){
   const[noticeOpen,setNoticeOpen]=useState(false);
   const[profileOpen,setProfileOpen]=useState(false);
   const[action,setAction]=useState<string|null>(null);
+  const[theme,setTheme]=useState<'light'|'dark'>(()=>(localStorage.getItem('dpa_theme') as 'light'|'dark')||'light');
   const now=useLiveClock();
   const[loginAt,setLoginAt]=useState(()=>sessionStorage.getItem('dpa_login_at')||'');
   useEffect(()=>{if((session||demoMode)&&!loginAt){const stamp=new Date().toISOString();sessionStorage.setItem('dpa_login_at',stamp);setLoginAt(stamp)}},[session,demoMode,loginAt]);
+  useEffect(()=>{document.body.dataset.theme=theme;localStorage.setItem('dpa_theme',theme)},[theme]);
+  useEffect(()=>{document.body.dataset.compact=collapsed?'1':'0';localStorage.setItem('dpa_sidebar_collapsed',collapsed?'1':'0')},[collapsed]);
+  useEffect(()=>{localStorage.setItem('dpa_last_section',section)},[section]);
+
   const sessionSeconds=loginAt?Math.max(0,Math.floor((now.getTime()-new Date(loginAt).getTime())/1000)):0;
   const hh=String(Math.floor(sessionSeconds/3600)).padStart(2,'0');
   const mm=String(Math.floor((sessionSeconds%3600)/60)).padStart(2,'0');
@@ -126,12 +132,12 @@ function App(){
     notify('Signed out safely');
   };
 
-  return <div className="app">
+  return <div className={'app '+(collapsed?'sidebar-collapsed':'')}>
     <aside className={open?'side open':'side'}>
       <div className="brand">
         <div className="mark">D</div>
         <div><b>DECIMAL POINT</b><span>ANALYTICS</span></div>
-        <button className="close" onClick={()=>setOpen(false)}><X/></button>
+        <button className="close" aria-label="Close navigation" onClick={()=>setOpen(false)}><X/></button>
       </div>
 
       <div className="workspace">
@@ -160,15 +166,15 @@ function App(){
       <div className="sidebottom">
         <div className="secure">
           <ShieldCheck size={17}/>
-          <div><b>Secure workspace</b><span>Database online</span></div>
+          <div><b>Secure workspace</b><span>{dbStatus==='connected'?'Database connected':dbStatus==='offline'?'Demo / offline data':'Checking services…'}</span></div>
         </div>
-        <button onClick={signOut}><LogOut size={17}/>Sign out</button>
+        <button className="sidebar-signout" onClick={signOut}><LogOut size={17}/><span>Sign out</span></button>
       </div>
     </aside>
 
     <main>
       <header>
-        <button className="hamb" onClick={()=>setOpen(true)}><Menu/></button>
+        <div className="header-left"><button className="hamb" aria-label="Open navigation" onClick={()=>setOpen(true)}><Menu/></button><button className="collapse-toggle" title={collapsed?'Expand sidebar':'Collapse sidebar'} onClick={()=>setCollapsed(v=>!v)}>{collapsed?'›':'‹'}</button></div>
 
         <div className="crumb">
           <span>Employee Portal</span>
@@ -177,6 +183,7 @@ function App(){
         </div>
 
         <div className="head-actions">
+          <span className={'header-health '+dbStatus}><i></i>{dbStatus==='connected'?'All systems operational':dbStatus==='offline'?'Demo workspace':'Checking systems'}</span>
           <div className="corner-status">
             <div className="corner-time"><div className="corner-time-top"><Clock3 size={13}/><span>LOCAL TIME</span><i></i></div><strong>{now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})}</strong><small>{now.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short'})}</small></div>
             <div className="corner-divider"></div>
@@ -188,7 +195,8 @@ function App(){
           <button className="iconbtn header-icon" onClick={()=>setNoticeOpen(v=>!v)}>
             <Bell size={19}/><i>3</i>
           </button>
-          <button className="avatar profile-trigger" onClick={()=>setProfileOpen(v=>!v)}>MS</button>
+          <button className="iconbtn" title={theme==='dark'?'Switch to light mode':'Switch to dark mode'} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sparkles size={17}/>:<CircleDollarSign size={17}/>}</button>
+          <button className="avatar profile-trigger" aria-label="Open profile menu" onClick={()=>setProfileOpen(v=>!v)}>MS</button>
         </div>
 
         {noticeOpen&&<div className="header-popover notifications">
@@ -243,7 +251,7 @@ function App(){
           <kbd>ESC</kbd>
         </div>
         <div className="command-label">Quick navigation</div>
-        {nav.slice(0,15).map(([key,label,Icon])=><button key={key} onClick={()=>{setSection(key);setCommandOpen(false);}}>
+        {nav.filter(([key,label])=>String(label).toLowerCase().includes(query.toLowerCase())||String(key).toLowerCase().includes(query.toLowerCase())).slice(0,15).map(([key,label,Icon])=><button key={key} onClick={()=>{setSection(key);setCommandOpen(false);}}>
           <Icon size={17}/><span>{label}</span><ChevronRight size={15}/>
         </button>)}
         <div className="command-footer"><Command size={13}/> Command palette <span>Ctrl K</span></div>
