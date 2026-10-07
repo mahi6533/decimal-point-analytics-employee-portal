@@ -25,16 +25,14 @@ const nav:[Section,string,any][]=[
   ['Settings','Settings',SlidersHorizontal],
   ['Admin','Admin Center',ShieldCheck]
 ];
-const dayBucket=Math.floor(Date.now()/(5*24*60*60*1000));
 const today=new Date();
 const dateLabel=(d:Date)=>d.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
 const longDateLabel=(d:Date)=>d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric',year:'numeric'});
 const workDay=(offset:number)=>{const d=new Date();d.setDate(d.getDate()+offset);return dateLabel(d)};
 const longWorkDay=(offset:number)=>{const d=new Date();d.setDate(d.getDate()+offset);return longDateLabel(d)};
 function useLiveClock(){const[now,setNow]=useState(()=>new Date());useEffect(()=>{const id=window.setInterval(()=>setNow(new Date()),1000);return()=>window.clearInterval(id)},[]);return now}
-const taskDue=(offset:number)=>{const d=new Date(today);d.setDate(d.getDate()+offset+((dayBucket%3)*2));return dateLabel(d)};
-const progress=(base:number)=>Math.min(99,base+((dayBucket%5)*3));
-const tasks=[['Client data quality review','Analytics Platform',dayBucket%2===0?'Today':taskDue(2),'High',progress(72)+'%'],['Quarterly dashboard refresh','Risk Analytics',taskDue(4),'Medium',progress(41)+'%'],['Model validation pack','Quant Research',taskDue(7),'High',progress(18)+'%'],['Knowledge base update','Internal',taskDue(10),'Low',progress(86)+'%']];
+const progress=(base:number)=>base;
+const tasks=[['Client data quality review','Analytics Platform',dateLabel(today),'High',progress(72)+'%'],['Quarterly dashboard refresh','Risk Analytics',workDay(2),'Medium',progress(41)+'%'],['Model validation pack','Quant Research',workDay(4),'High',progress(18)+'%'],['Knowledge base update','Internal',workDay(8),'Low',progress(86)+'%']];
 const people=[['AS','Ananya Shah','VP · Analytics','Mumbai'],['RK','Rohan Kulkarni','Senior Analyst','Pune'],['PN','Priya Nair','Project Manager','Bengaluru'],['VM','Vikram Mehta','Data Engineer','Mumbai'],['SI','Sneha Iyer','HR Business Partner','Pune'],['AD','Amit Deshmukh','Team Lead','Nashik']];
 const activities=[['09:42','Completed','Client data quality review'],['09:10','Updated','Quarterly dashboard refresh'],['Yesterday','Approved','Leave request · 2 days'],['Yesterday','Uploaded','Project charter v3.pdf']];
 function App(){
@@ -573,7 +571,9 @@ const seedWorkItems:WorkItem[]=[
   }
 ];
 function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
-  const stored=localStorage.getItem('dpa_work_items');
+  const workSeedDate=new Date().toISOString().slice(0,10);
+  const storedDate=localStorage.getItem('dpa_work_items_date');
+  const stored=storedDate===workSeedDate?localStorage.getItem('dpa_work_items'):null;
   const[items,setItems]=useState<WorkItem[]>(()=>stored?(JSON.parse(stored) as WorkItem[]):seedWorkItems);
   const[selected,setSelected]=useState<WorkItem|null>(null);
   const[filter,setFilter]=useState<'all'|'delivery'|'side'|'due'|'active'|'completed'>('all');
@@ -581,7 +581,7 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
   const[comment,setComment]=useState('');
   const[newTask,setNewTask]=useState({title:'',project:'Internal Analytics',priority:'Medium' as WorkItem['priority'],due:workDay(17),type:'Side Hustle' as WorkItem['type'],description:''});
 
-  useEffect(()=>{localStorage.setItem('dpa_work_items',JSON.stringify(items));},[items]);
+  useEffect(()=>{localStorage.setItem('dpa_work_items',JSON.stringify(items));localStorage.setItem('dpa_work_items_date',workSeedDate);},[items,workSeedDate]);
 
   const persistUpdate=(next:WorkItem)=>{
     setItems(prev=>prev.map(x=>x.id===next.id?next:x));
