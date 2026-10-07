@@ -51,9 +51,9 @@ function App(){
   const[profileOpen,setProfileOpen]=useState(false);
   const[action,setAction]=useState<string|null>(null);
   const now=useLiveClock();
-  const[loginAt]=useState(()=>sessionStorage.getItem('dpa_login_at')||new Date().toISOString());
-  useEffect(()=>{if(!sessionStorage.getItem('dpa_login_at'))sessionStorage.setItem('dpa_login_at',loginAt)},[loginAt]);
-  const sessionSeconds=Math.max(0,Math.floor((now.getTime()-new Date(loginAt).getTime())/1000));
+  const[loginAt,setLoginAt]=useState(()=>sessionStorage.getItem('dpa_login_at')||'');
+  useEffect(()=>{if((session||demoMode)&&!loginAt){const stamp=new Date().toISOString();sessionStorage.setItem('dpa_login_at',stamp);setLoginAt(stamp)}},[session,demoMode,loginAt]);
+  const sessionSeconds=loginAt?Math.max(0,Math.floor((now.getTime()-new Date(loginAt).getTime())/1000)):0;
   const hh=String(Math.floor(sessionSeconds/3600)).padStart(2,'0');
   const mm=String(Math.floor((sessionSeconds%3600)/60)).padStart(2,'0');
   const ss=String(sessionSeconds%60).padStart(2,'0');
@@ -122,6 +122,8 @@ function App(){
   const signOut=async()=>{
     await supabaseAuth.auth.signOut().catch(()=>{});
     localStorage.removeItem('dpa_demo_mode');
+    sessionStorage.removeItem('dpa_login_at');
+    setLoginAt('');
     setDemoMode(false);
     notify('Signed out safely');
   };
@@ -276,7 +278,7 @@ function ActionCenter({title,onClose,notify}:{title:string,onClose:()=>void,noti
     {mode==='support'&&<div className="action-detail"><div className="detail-stat"><span>Support channel</span><b>Employee Service Desk</b></div><label>Issue<textarea value={details} onChange={e=>setDetails(e.target.value)} placeholder="Describe the issue"/></label><button className="primary" onClick={()=>save('Support ticket submitted')}>Create ticket</button></div>}
     {mode==='announcement'&&<div className="action-detail"><div className="detail-stat"><span>Read status</span><b>Announcement opened</b></div><p>Review the update and record it in workspace activity.</p><button className="primary" onClick={()=>save('Announcement marked as read')}>Mark as read</button></div>}
     {mode==='contact'&&<div className="action-detail"><div className="contact-detail"><div className="bigavatar">HR</div><div><b>Employee Support</b><span>People Operations · benefits, leave and workplace support</span></div></div><div className="action-actions"><a className="primary" href="mailto:people@company.example">Email team</a><button className="ghost" onClick={()=>{navigator.clipboard?.writeText('people@company.example');notify('Contact copied');onClose()}}>Copy contact</button></div></div>}
-    {mode==='project'&&<div className="action-detail"><div className="detail-stat"><span>Workspace</span><b>Delivery program</b></div><div className="detail-stat"><span>Health</span><b>On track · 92%</b></div><div className="detail-stat"><span>Next milestone</span><b>Oct 03, 2026</b></div><button className="primary" onClick={()=>save('Project workspace updated')}>Open project workspace</button></div>}
+    {mode==='project'&&<div className="action-detail"><div className="detail-stat"><span>Workspace</span><b>Delivery program</b></div><div className="detail-stat"><span>Health</span><b>On track · 92%</b></div><div className="detail-stat"><span>Next milestone</span><b>{longWorkDay(0)}</b></div><button className="primary" onClick={()=>save('Project workspace updated')}>Open project workspace</button></div>}
     {mode==='details'&&<div className="action-detail"><div className="detail-stat"><span>Action</span><b>{title}</b></div><div className="detail-stat"><span>Activity</span><b>Recorded in this browser</b></div><label>Notes<textarea value={details} onChange={e=>setDetails(e.target.value)} placeholder="Add optional notes"/></label><button className="primary" onClick={()=>save('Workspace action saved')}>Save action</button></div>}
   </div></div>;
 }
@@ -612,7 +614,7 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
       description:newTask.description||'New work item created from My Work. Add scope, evidence and acceptance criteria before starting delivery.',
       deliverable:'Define deliverable',dependency:'None',checklist:['Confirm scope and acceptance criteria','Create working draft','Review output','Attach supporting evidence','Mark complete'],activity:['Just now · Task created from My Work'],comments:[]
     };
-    setItems(prev=>[item,...prev]);setShowCreate(false);setNewTask({title:'',project:'Internal Analytics',priority:'Medium',due:'Oct 20',type:'Side Hustle',description:''});openTask(item);notify('New task created');
+    setItems(prev=>[item,...prev]);setShowCreate(false);setNewTask({title:'',project:'Internal Analytics',priority:'Medium',due:workDay(17),type:'Side Hustle',description:''});openTask(item);notify('New task created');
   };
 
   return <>
