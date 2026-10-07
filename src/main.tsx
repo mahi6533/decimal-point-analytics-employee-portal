@@ -737,10 +737,30 @@ function Travel({notify}:{notify:(s:string)=>void}){
 }
 
 function SettingsPage({notify}:{notify:(s:string)=>void}){
-  const prefs=[['Desktop notifications','Receive task, leave and service alerts','On'],['Weekly digest','Get a Friday summary of work and people activity','On'],['Calendar reminders','15 minute reminder before meetings','On'],['Product updates','News about new portal features','Off']];
-  return <><PageTitle eyebrow="WORKSPACE PREFERENCES" title="Settings" sub="Personalize notifications, security and workspace behavior." action={<button className="primary" onClick={()=>notify('Settings saved')}><CheckCircle2 size={16}/> Save changes</button>}/><div className="grid2"><section className="panel settings-panel"><div className="panel-head"><div><h2>Notifications</h2><p>Choose what reaches your work inbox</p></div></div>{prefs.map((p,i)=><div className="setting-row" key={i}><div><b>{p[0]}</b><span>{p[1]}</span></div><button className={'toggle '+(p[2]==='On'?'on':'')} onClick={()=>notify(p[0]+' preference updated')}><i></i><span>{p[2]}</span></button></div>)}</section><section className="panel"><div className="panel-head"><div><h2>Security</h2><p>Account controls and active sessions</p></div></div>{[['MFA','Enabled · Authenticator app','Protected'],['Password','Last changed 38 days ago','Healthy'],['Sessions','2 active sessions','Review']].map((x,i)=><div className="simple-row" key={i}><div><b>{x[0]}</b><span>{x[1]}</span></div><label>{x[2]}</label><button className="link" onClick={()=>notify(x[0]+' settings opened')}>Manage</button></div>)}</section></div><section className="panel"><div className="panel-head"><div><h2>Workspace appearance</h2><p>Choose how the employee portal feels and behaves</p></div></div><div className="appearance-grid">{[['Density','Comfortable','Rows, cards and spacing'],['Theme','System','Matches your device'],['Start page','Overview','Open the dashboard on sign-in']].map(x=><button key={x[0]} className="appearance-card" onClick={()=>notify(x[0]+' preference selected')}><span>{x[0]}</span><b>{x[1]}</b><small>{x[2]}</small><ChevronRight size={15}/></button>)}</div></section></>;
+  const[prefs,setPrefs]=useState<Record<string,boolean>>(()=>{try{return JSON.parse(localStorage.getItem('dpa_prefs')||'{}')}catch{return{}}});
+  const[theme,setThemeState]=useState<'light'|'dark'>((localStorage.getItem('dpa_theme') as 'light'|'dark')||'light');
+  const updatePref=(key:string,defaultValue:boolean)=>{const next={...prefs,[key]:!(prefs[key]??defaultValue)};setPrefs(next);localStorage.setItem('dpa_prefs',JSON.stringify(next));notify(key+' preference updated')};
+  const setTheme=(value:'light'|'dark')=>{setThemeState(value);localStorage.setItem('dpa_theme',value);document.body.dataset.theme=value;notify(value==='dark'?'Dark mode enabled':'Light mode enabled')};
+  const items:[string,string,string,boolean][]=[['Desktop notifications','Receive task, leave and service alerts','desktop',true],['Weekly digest','Get a Friday summary of work and people activity','digest',true],['Calendar reminders','15 minute reminder before meetings','calendar',true],['Product updates','News about new portal features','updates',false]];
+  return <><PageTitle eyebrow="WORKSPACE PREFERENCES" title="Settings" sub="Personalize notifications, security, appearance and workspace behavior." action={<button className="primary" onClick={()=>notify('Settings saved')}><CheckCircle2 size={16}/> Save changes</button>}/>
+    <div className="settings-hero"><div><span className="eyebrow">PERSONALIZATION</span><h2>Your workspace, your way.</h2><p>Preferences are stored locally in this browser for the demo workspace and take effect immediately.</p></div>
+      <div className="theme-picker"><button className={theme==='light'?'active':''} onClick={()=>setTheme('light')}><Sun size={16}/> Light</button><button className={theme==='dark'?'active':''} onClick={()=>setTheme('dark')}><Moon size={16}/> Dark</button></div>
+    </div>
+    <div className="grid2">
+      <section className="panel settings-panel"><div className="panel-head"><div><h2>Notifications</h2><p>Choose what reaches your work inbox</p></div></div>
+        {items.map(p=><div className="setting-row" key={p[2]}><div><b>{p[0]}</b><span>{p[1]}</span></div><button className={'toggle '+((prefs[p[2]]??p[3])?'on':'')} onClick={()=>updatePref(p[2],p[3])}><i></i><span>{(prefs[p[2]]??p[3])?'On':'Off'}</span></button></div>)}
+      </section>
+      <section className="panel"><div className="panel-head"><div><h2>Security</h2><p>Account controls and active sessions</p></div></div>
+        {[['MFA','Enabled · Authenticator app','Protected'],['Password','Last changed 38 days ago','Healthy'],['Sessions','2 active sessions','Review']].map((x,i)=><div className="simple-row" key={i}><div><b>{x[0]}</b><span>{x[1]}</span></div><label>{x[2]}</label><button className="link" onClick={()=>notify(x[0]+' settings opened')}>Manage</button></div>)}
+      </section>
+    </div>
+    <section className="panel"><div className="panel-head"><div><h2>Workspace controls</h2><p>Useful shortcuts and interface behavior</p></div></div>
+      <div className="appearance-grid"><button className="appearance-card" onClick={()=>notify('Command palette uses Ctrl K')}><Command size={17}/><span>Command palette</span><b>Ctrl / ⌘ K</b><small>Open navigation and quick actions</small></button>
+        <button className="appearance-card" onClick={()=>setTheme(theme==='dark'?'light':'dark')}><Sparkles size={17}/><span>Theme</span><b>{theme==='dark'?'Dark':'Light'}</b><small>Switch the workspace appearance</small></button>
+        <button className="appearance-card" onClick={()=>notify('Workspace density preference opened')}><SlidersHorizontal size={17}/><span>Density</span><b>Comfortable</b><small>Balanced layout for desktop work</small></button></div>
+    </section>
+  </>;
 }
-
 function Directory({query,notify}:{query:string,notify:(s:string)=>void}){let d=people.filter(p=>p.join(' ').toLowerCase().includes(query.toLowerCase()));return <><PageTitle eyebrow="PEOPLE & TEAMS" title="Company Directory" sub="Find colleagues, teams and business contacts across Decimal Point Analytics."/><div className="directory">{d.map((p,i)=><div className="person" key={i}><div className="personavatar">{p[0]}</div><div><b>{p[1]}</b><span>{p[2]}</span><small><MapPin size={13}/>{p[3]}</small></div><button className="iconbtn" onClick={()=>notify(p[1]+' contact opened')}><Mail size={17}/></button></div>)}</div></>}
 function Attendance({notify}:{notify:(s:string)=>void}){
   const now=useLiveClock();
