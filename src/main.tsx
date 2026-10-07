@@ -1,4 +1,4 @@
-import React,{useEffect,useState}from'react';import{createRoot}from'react-dom/client';import{LayoutDashboard,Users,Briefcase,CheckSquare,CalendarDays,Clock3,FileText,Bell,Headphones,Settings,Search,ChevronRight,ArrowUpRight,TrendingUp,ShieldCheck,Menu,X,LogOut,Building2,MapPin,Mail,Phone,Globe2,Plus,Download,MoreHorizontal,GraduationCap,WalletCards,Laptop2,Target,FileCheck,Command,MessageSquare,FolderKanban,ReceiptText,HeartHandshake,PlaneTakeoff,SlidersHorizontal,Sparkles,Sun,Moon,CheckCircle2,AlertTriangle,ArrowDownRight,UsersRound,CreditCard,Landmark,CircleDollarSign,Network,BarChart3}from'lucide-react';import'./styles.css';
+import React,{useEffect,useState}from'react';import{createRoot}from'react-dom/client';import{LayoutDashboard,Users,Briefcase,CheckSquare,CalendarDays,Clock3,FileText,Bell,Headphones,Settings,Search,ChevronRight,ArrowUpRight,TrendingUp,ShieldCheck,Menu,X,LogOut,Building2,MapPin,Mail,Phone,Globe2,Plus,Download,MoreHorizontal,GraduationCap,WalletCards,Laptop2,Target,FileCheck,Command,MessageSquare,FolderKanban,ReceiptText,HeartHandshake,PlaneTakeoff,SlidersHorizontal,Sparkles,Sun,Moon,CheckCircle2,AlertTriangle,ArrowDownRight,UsersRound,CreditCard,Landmark,Network,BarChart3}from'lucide-react';import'./styles.css';
 import { supabase, supabaseAuth } from './lib/supabase';
 
 type Section='Overview'|'My Work'|'Projects'|'Attendance'|'Timesheet'|'Leave'|'Documents'|'Directory'|'Calendar'|'Announcements'|'Performance'|'Learning'|'Expenses'|'Payroll'|'Benefits'|'Travel'|'Assets'|'Support'|'Profile'|'Settings'|'Admin';
@@ -195,7 +195,7 @@ function App(){
           <button className="iconbtn header-icon" onClick={()=>setNoticeOpen(v=>!v)}>
             <Bell size={19}/><i>3</i>
           </button>
-          <button className="iconbtn" title={theme==='dark'?'Switch to light mode':'Switch to dark mode'} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sparkles size={17}/>:<CircleDollarSign size={17}/>}</button>
+          <button className="iconbtn" title={theme==='dark'?'Switch to light mode':'Switch to dark mode'} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sun size={17}/>:<Moon size={17}/>}</button>
           <button className="avatar profile-trigger" aria-label="Open profile menu" onClick={()=>setProfileOpen(v=>!v)}>MS</button>
         </div>
 
