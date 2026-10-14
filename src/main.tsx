@@ -219,7 +219,7 @@ function App(){
       </header>
 
       <div className="content">
-        {section==='Overview'?<Overview notify={notify} setSection={setSection}/>:
+        {section==='Overview'?<Overview notify={notify} setSection={setSection} dbStatus={dbStatus}/>:
          section==='My Work'?<MyWork query={query} notify={notify}/>:
          section==='Projects'?<Projects notify={notify}/>:
          section==='Directory'?<Directory query={query} notify={notify}/>:
@@ -250,7 +250,14 @@ function App(){
           <input autoFocus value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search pages, people and actions..."/>
           <kbd>ESC</kbd>
         </div>
-        <div className="command-label">Quick navigation</div>
+        <div className="command-label">Quick actions</div>
+        {[
+          ['Expense claim','Expenses','Expense form opened',ReceiptText],
+          ['Request leave','Leave','Leave request form opened',CalendarDays],
+          ['New travel request','Travel','Travel request started',PlaneTakeoff],
+          ['Contact support','Support','Support ticket opened',Headphones]
+        ].filter(([label])=>String(label).toLowerCase().includes(query.toLowerCase())).map(([label,target,message,Icon])=><button key={String(label)} onClick={()=>{setSection(target as Section);setCommandOpen(false);notify(String(message));}}><Icon size={17}/><span>{String(label)}</span><ChevronRight size={15}/></button>)}
+        <div className="command-label">Workspace navigation</div>
         {nav.filter(([key,label])=>String(label).toLowerCase().includes(query.toLowerCase())||String(key).toLowerCase().includes(query.toLowerCase())).slice(0,15).map(([key,label,Icon])=><button key={key} onClick={()=>{setSection(key);setCommandOpen(false);}}>
           <Icon size={17}/><span>{label}</span><ChevronRight size={15}/>
         </button>)}
@@ -290,18 +297,19 @@ function ActionCenter({title,onClose,notify}:{title:string,onClose:()=>void,noti
 }
 
 function PageTitle({eyebrow,title,sub,action}:{eyebrow:string,title:string,sub:string,action?:React.ReactNode}){return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{sub}</p></div>{action}</div>}
-function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Section)=>void}){const now=useLiveClock();
-  const attendanceKey='dpa_attendance_'+new Date().toISOString().slice(0,10);
+function Overview({notify,setSection,dbStatus}:{notify:(s:string)=>void,setSection:(s:Section)=>void,dbStatus:string}){const now=useLiveClock();
+  const attendanceKey='dpa_attendance_session_'+new Date().toISOString().slice(0,10);
   const[attendanceMarked,setAttendanceMarked]=useState(()=>localStorage.getItem(attendanceKey)==='1');
   const[period,setPeriod]=useState('This month');
-  const markAttendance=()=>{localStorage.setItem(attendanceKey,'1');setAttendanceMarked(true);notify('Attendance marked for today');};
+  const markAttendance=()=>{const t=new Date();localStorage.setItem(attendanceKey,'1');localStorage.setItem(attendanceKey+'_time',t.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}));localStorage.setItem(attendanceKey+'_checked_at',t.toISOString());setAttendanceMarked(true);notify('Attendance checked in');};
+  const greeting=now.getHours()<12?'Good morning':now.getHours()<18?'Good afternoon':'Good evening';
   const quick=(section:Section,message:string)=>{setSection(section);notify(message);};
 
   return <>
     <section className="dashboard-hero">
       <div className="hero-copy">
         <div className="eyebrow">EMPLOYEE COMMAND CENTER · {longDateLabel(now)}</div>
-        <h1>Good morning, Mahesh.</h1>
+        <h1>{greeting}, Mahesh.</h1>
         <p>One workspace for delivery, people operations, finance, learning and workplace services.</p>
         <div className="hero-actions">
           <button className="primary" onClick={()=>quick('My Work','Opening your active work queue')}><Briefcase size={16}/> Open work queue <ArrowUpRight size={15}/></button>
@@ -310,7 +318,7 @@ function Overview({notify,setSection}:{notify:(s:string)=>void,setSection:(s:Sec
         </div>
       </div>
       <div className="hero-side">
-        <div className="hero-health"><span>WORKSPACE HEALTH</span><strong>Healthy</strong><small>All key services available</small></div>
+        <div className="hero-health"><span>WORKSPACE STATUS</span><strong>{dbStatus==='connected'?'Connected':dbStatus==='offline'?'Demo mode':'Checking'}</strong><small>{dbStatus==='connected'?'Database connection verified':dbStatus==='offline'?'Using local demo workspace':'Verifying data connection'}</small></div>
         <div className="hero-ring"><b>86%</b><span>utilization</span></div>
       </div>
     </section>
