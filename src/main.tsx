@@ -30,6 +30,9 @@ const dateLabel=(d:Date)=>d.toLocaleDateString('en-US',{month:'short',day:'2-dig
 const longDateLabel=(d:Date)=>d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric',year:'numeric'});
 const workDay=(offset:number)=>{const d=new Date();d.setDate(d.getDate()+offset);return dateLabel(d)};
 const longWorkDay=(offset:number)=>{const d=new Date();d.setDate(d.getDate()+offset);return longDateLabel(d)};
+const workDateValue=(label:string)=>{const now=new Date();let d=new Date(label+', '+now.getFullYear());if(Number.isNaN(d.getTime()))return new Date(now.getFullYear(),now.getMonth(),now.getDate());const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());const days=(d.getTime()-today.getTime())/86400000;if(days < -180)d=new Date(label+', '+(now.getFullYear()+1));return new Date(d.getFullYear(),d.getMonth(),d.getDate())};
+const daysUntilWorkDate=(label:string)=>Math.round((workDateValue(label).getTime()-new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()).getTime())/86400000);
+const dueBadge=(label:string,status:string)=>status==='Completed'?'Completed':daysUntilWorkDate(label)<0?'Overdue':daysUntilWorkDate(label)===0?'Due today':daysUntilWorkDate(label)<=7?'Due soon':'Upcoming';
 function useLiveClock(){const[now,setNow]=useState(()=>new Date());useEffect(()=>{const id=window.setInterval(()=>setNow(new Date()),1000);return()=>window.clearInterval(id)},[]);return now}
 const progress=(base:number)=>base;
 const tasks=[['Client data quality review','Analytics Platform',dateLabel(today),'High',progress(72)+'%'],['Quarterly dashboard refresh','Risk Analytics',workDay(2),'Medium',progress(41)+'%'],['Model validation pack','Quant Research',workDay(4),'High',progress(18)+'%'],['Knowledge base update','Internal',workDay(8),'Low',progress(86)+'%']];
@@ -583,6 +586,42 @@ const seedWorkItems:WorkItem[]=[
     deliverable:'Metric definition audit + approved glossary',dependency:'Risk metric glossary v2',
     checklist:['Inventory metrics','Compare definitions','Validate source mappings','Flag inconsistencies','Publish approved glossary'],
     activity:[workDay(-1)+' · Metric inventory started'],
+    comments:[]
+  },
+  {
+    id:'WK-1092',title:'Weekly client SLA and exception summary',project:'Analytics Platform',type:'Delivery',client:'Global Banking Client',
+    priority:'Urgent',status:'In progress',progress:58,due:workDay(1),estimate:'4h',logged:'2h 10m',sprint:'Sprint 26',owner:'Mahesh Shirsath',
+    description:'Compile SLA performance, unresolved exceptions and response-time breaches into a concise client-ready weekly summary with clear owners and next actions.',
+    deliverable:'Weekly SLA scorecard + exception action list',dependency:'Support ticket export and reconciliation run',
+    checklist:['Refresh SLA metrics','Validate breach calculations','Group exceptions by severity','Confirm action owners','Share review-ready summary'],
+    activity:[workDay(0)+' · SLA variance review started',workDay(-1)+' · Exception data prepared'],
+    comments:['Rohan · Separate confirmed breaches from items still under investigation.']
+  },
+  {
+    id:'WK-1098',title:'Data lineage and source ownership review',project:'Enterprise Data Hub',type:'Delivery',client:'Technology Practice',
+    priority:'High',status:'Backlog',progress:12,due:workDay(4),estimate:'6h',logged:'0h 40m',sprint:'Sprint 26',owner:'Mahesh Shirsath',
+    description:'Map critical report fields to upstream datasets, document data owners and flag gaps in lineage evidence that could affect release support.',
+    deliverable:'Lineage register + source owner matrix',dependency:'Latest data catalog extract',
+    checklist:['Inventory critical report fields','Map upstream datasets','Confirm accountable owners','Flag lineage gaps','Publish review register'],
+    activity:[workDay(0)+' · Review scoped for Sprint 26'],
+    comments:[]
+  },
+  {
+    id:'SH-2131',title:'Reusable analytics component library',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Innovation Lab',
+    priority:'Medium',status:'In progress',progress:37,due:workDay(5),estimate:'5h',logged:'1h 35m',sprint:'Innovation Sprint 05',owner:'Mahesh Shirsath',
+    description:'Create reusable KPI, filter, status and chart patterns that help internal analytics pages stay consistent, accessible and responsive across screen sizes.',
+    deliverable:'Component reference page + reusable UI examples',dependency:'Approved lavender and teal token set',
+    checklist:['Define component tokens','Build KPI card variants','Document chart and filter patterns','Test narrow screen layouts','Publish usage notes'],
+    activity:[workDay(0)+' · KPI card variants drafted',workDay(-1)+' · Token mapping prepared'],
+    comments:[]
+  },
+  {
+    id:'SH-2138',title:'AI-assisted documentation experiment',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Analytics Enablement Guild',
+    priority:'Low',status:'Backlog',progress:8,due:workDay(9),estimate:'4h',logged:'0h 25m',sprint:'Innovation Sprint 05',owner:'Mahesh Shirsath',
+    description:'Evaluate a lightweight workflow for turning approved technical notes into structured documentation, with human review and privacy checks before publication.',
+    deliverable:'Experiment notes + quality checklist',dependency:'Sanitized example documentation',
+    checklist:['Choose a safe sample input','Define output structure','Test a small workflow','Review factual accuracy','Document guardrails and findings'],
+    activity:[workDay(-1)+' · Experiment scope drafted'],
     comments:[]
   }
 ];
