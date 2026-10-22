@@ -631,7 +631,8 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
   const stored=storedDate===workSeedDate?localStorage.getItem('dpa_work_items'):null;
   const[items,setItems]=useState<WorkItem[]>(()=>stored?(JSON.parse(stored) as WorkItem[]):seedWorkItems);
   const[selected,setSelected]=useState<WorkItem|null>(null);
-  const[filter,setFilter]=useState<'all'|'delivery'|'side'|'due'|'active'|'completed'>('all');
+  const[filter,setFilter]=useState<'all'|'delivery'|'side'|'due'|'today'|'overdue'|'active'|'completed'>('all');
+  const[workSearch,setWorkSearch]=useState('');
   const[showCreate,setShowCreate]=useState(false);
   const[comment,setComment]=useState('');
   const[newTask,setNewTask]=useState({title:'',project:'Internal Analytics',priority:'Medium' as WorkItem['priority'],due:workDay(17),type:'Side Hustle' as WorkItem['type'],description:''});
@@ -645,12 +646,16 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
   };
 
   const filtered=items.filter(x=>{
-    const matchesSearch=x.title.toLowerCase().includes(query.toLowerCase())||x.project.toLowerCase().includes(query.toLowerCase())||x.client.toLowerCase().includes(query.toLowerCase())||x.deliverable.toLowerCase().includes(query.toLowerCase());
+    const search=(query+' '+workSearch).trim().toLowerCase();
+    const matchesSearch=!search||[x.title,x.project,x.client,x.deliverable,x.id,x.owner,x.status,x.priority].some(v=>v.toLowerCase().includes(search));
     if(!matchesSearch)return false;
+    const days=daysUntilWorkDate(x.due);
     if(filter==='delivery')return x.type==='Delivery';
     if(filter==='side')return x.type==='Side Hustle';
-    if(filter==='due')return x.status!=='Completed';
-    if(filter==='active')return x.status==='In progress'||x.status==='In review'||x.status==='Blocked';
+    if(filter==='due')return x.status!=='Completed'&&days>=0&&days<=7;
+    if(filter==='today')return x.status!=='Completed'&&days===0;
+    if(filter==='overdue')return x.status!=='Completed'&&days<0;
+    if(filter==='active')return x.status!=='Completed';
     if(filter==='completed')return x.status==='Completed';
     return true;
   });
@@ -658,7 +663,12 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
   const side=filtered.filter(x=>x.type==='Side Hustle');
   const activeCount=items.filter(x=>x.status!=='Completed').length;
   const sideCount=items.filter(x=>x.type==='Side Hustle').length;
-  const completion=Math.round(items.reduce((sum,x)=>sum+x.progress,0)/items.length);
+  const overdueCount=items.filter(x=>x.status!=='Completed'&&daysUntilWorkDate(x.due)<0).length;
+  const dueSoonCount=items.filter(x=>x.status!=='Completed'&&daysUntilWorkDate(x.due)>=0&&daysUntilWorkDate(x.due)<=7).length;
+  const dueTodayCount=items.filter(x=>x.status!=='Completed'&&daysUntilWorkDate(x.due)===0).length;
+  const reviewCount=items.filter(x=>x.status==='In review').length;
+  const blockedCount=items.filter(x=>x.status==='Blocked').length;
+  const completion=Math.round(items.reduce((sum,x)=>sum+x.progress,0)/Math.max(items.length,1));
 
   const openTask=(task:WorkItem)=>{setSelected(task);setComment('');};
   const addTask=()=>{
@@ -684,7 +694,7 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
 
     <section className="work-command-panel">
       <div><div className="eyebrow">MY WORKSPACE</div><h2>Run your work from one place</h2><p>Open a task to see scope, deliverables, dependencies, checklist, history, comments and progress controls.</p></div>
-      <div className="work-command-stats"><div><b>38h 20m</b><span>logged this week</span></div><div><b>5</b><span>items due this week</span></div><div><b>2</b><span>items awaiting review</span></div></div>
+      <div className="work-command-stats"><div><b>{dueSoonCount}</b><span>due in 7 days</span></div><div><b>{overdueCount}</b><span>overdue items</span></div><div><b>{reviewCount}</b><span>awaiting review</span></div><div><b>{blockedCount}</b><span>blocked items</span></div></div>
     </section>
 
     <div className="work-filterbar">
@@ -692,13 +702,15 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
         {[
           ['all','All work',''],
           ['delivery','Delivery',''],
-          ['side','Side Hustle',''],
+          ['side','Innovation',''],
           ['active','Active',''],
-          ['due','Due soon',''],
+          ['today','Due today',''],
+          ['due','Next 7 days',''],
+          ['overdue','Overdue',''],
           ['completed','Completed','']
-        ].map(([key,label])=><button key={key} className={filter===key?'active':''} onClick={()=>setFilter(key as typeof filter)}>{label}<span>{key==='all'?items.length:key==='delivery'?items.filter(x=>x.type==='Delivery').length:key==='side'?sideCount:key==='completed'?items.filter(x=>x.status==='Completed').length:activeCount}</span></button>)}
+        ].map(([key,label])=><button key={key} className={filter===key?'active':''} onClick={()=>setFilter(key as typeof filter)}>{label}<span>{key==='all'?items.length:key==='delivery'?items.filter(x=>x.type==='Delivery').length:key==='side'?sideCount:key==='completed'?items.filter(x=>x.status==='Completed').length:key==='overdue'?overdueCount:key==='today'?dueTodayCount:key==='due'?dueSoonCount:activeCount}</span></button>)}
       </div>
-      <div className="smallsearch"><Search size={15}/>{query||'Workspace search'}</div>
+      <label className="smallsearch work-search"><Search size={15}/><input value={workSearch} onChange={e=>setWorkSearch(e.target.value)} placeholder="Search work items…"/></label>
     </div>
 
     <div className="work-layout">
@@ -706,7 +718,7 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
         <div className="panel-head"><div><h2>Delivery work</h2><p>Client, internal and recurring operational commitments</p></div><span className="panel-badge">{delivery.length} visible</span></div>
         {delivery.length===0?<div className="empty-state">No delivery work matches the current filter.</div>:delivery.map(task=><button className="work-item-row" key={task.id} onClick={()=>openTask(task)}>
           <div className="work-type-icon"><Briefcase size={16}/></div>
-          <div className="work-item-main"><div><b>{task.title}</b><span>{task.project} · {task.client}</span></div><div className="work-item-meta"><small>{task.id}</small><small>Due {task.due}</small><small>{task.estimate} estimate</small></div></div>
+          <div className="work-item-main"><div><b>{task.title}</b><span>{task.project} · {task.client}</span></div><div className="work-item-meta"><small>{task.id}</small><small className={'due-meta '+dueBadge(task.due,task.status).toLowerCase().replace(/\s/g,'-')}>{dueBadge(task.due,task.status)} · {task.due}</small><small>{task.estimate} estimate</small></div></div>
           <label className={'priority '+task.priority.toLowerCase()}>{task.priority}</label>
           <div className="work-progress-cell"><span>{task.progress}%</span><div className="progress"><i style={{width:task.progress+'%'}}></i></div></div>
           <span className={'work-status '+task.status.toLowerCase().replace(/\s/g,'-')}>{task.status}</span>
