@@ -628,8 +628,19 @@ const seedWorkItems:WorkItem[]=[
 function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
   const workSeedDate=new Date().toISOString().slice(0,10);
   const storedDate=localStorage.getItem('dpa_work_items_date');
-  const stored=storedDate===workSeedDate?localStorage.getItem('dpa_work_items'):null;
-  const[items,setItems]=useState<WorkItem[]>(()=>stored?(JSON.parse(stored) as WorkItem[]):seedWorkItems);
+  const stored=localStorage.getItem('dpa_work_items');
+  const[items,setItems]=useState<WorkItem[]>(()=>{
+    if(!stored)return seedWorkItems;
+    try{
+      const saved=JSON.parse(stored) as WorkItem[];
+      if(!Array.isArray(saved))return seedWorkItems;
+      if(storedDate===workSeedDate)return saved;
+      const freshById=new Map(seedWorkItems.map(item=>[item.id,item]));
+      const savedIds=new Set(saved.map(item=>item.id));
+      const rebased=saved.map(item=>{const fresh=freshById.get(item.id);return fresh?{...item,due:fresh.due}:item;});
+      return [...rebased,...seedWorkItems.filter(item=>!savedIds.has(item.id))];
+    }catch{return seedWorkItems;}
+  });
   const[selected,setSelected]=useState<WorkItem|null>(null);
   const[filter,setFilter]=useState<'all'|'delivery'|'side'|'due'|'today'|'overdue'|'active'|'completed'>('all');
   const[workSearch,setWorkSearch]=useState('');
@@ -730,7 +741,7 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
         <div className="panel-head"><div><h2>Side Hustle & Innovation</h2><p>Non-billable innovation, learning and personal build work</p></div><span className="side-hustle-badge"><Sparkles size={13}/> {side.length} ideas</span></div>
         {side.length===0?<div className="empty-state">No side-hustle work matches the current filter.</div>:side.map(task=><button className="work-item-row side-row" key={task.id} onClick={()=>openTask(task)}>
           <div className="work-type-icon side-icon"><Sparkles size={16}/></div>
-          <div className="work-item-main"><div><b>{task.title}</b><span>{task.project} · {task.client}</span></div><div className="work-item-meta"><small>{task.id}</small><small>Due {task.due}</small><small>{task.estimate}</small></div></div>
+          <div className="work-item-main"><div><b>{task.title}</b><span>{task.project} · {task.client}</span></div><div className="work-item-meta"><small>{task.id}</small><small className={'due-meta '+dueBadge(task.due,task.status).toLowerCase().replace(/\s/g,'-')}>{dueBadge(task.due,task.status)} · {task.due}</small><small>{task.estimate}</small></div></div>
           <label className={'priority '+task.priority.toLowerCase()}>{task.priority}</label>
           <div className="work-progress-cell"><span>{task.progress}%</span><div className="progress"><i style={{width:task.progress+'%'}}></i></div></div>
           <span className={'work-status '+task.status.toLowerCase().replace(/\s/g,'-')}>{task.status}</span>
