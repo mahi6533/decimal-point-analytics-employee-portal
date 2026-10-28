@@ -45,8 +45,8 @@ function App(){
   const[query,setQuery]=useState('');
   const[toast,setToast]=useState('');
   const[dbStatus,setDbStatus]=useState('checking');
-  const[session,setSession]=useState<any>(null);
-  const[demoMode,setDemoMode]=useState(()=>localStorage.getItem('dpa_demo_mode')==='1');
+  const[session,setSession]=useState<any>(null);const accountEmail=String(session?.user?.email||'').trim();const accountMetadata=session?.user?.user_metadata||{};const metadataName=String(accountMetadata.full_name||accountMetadata.name||'').trim();const emailName=accountEmail?accountEmail.split('@')[0].split(/[._-]+/).filter(Boolean).map((part:string)=>part.charAt(0).toUpperCase()+part.slice(1)).join(' '):'';const employeeName=metadataName||emailName||'Employee';const employeeInitials=employeeName.split(/\s+/).filter(Boolean).slice(0,2).map((part:string)=>part.charAt(0).toUpperCase()).join('')||'E';const employeeDepartment=String(accountMetadata.department||accountMetadata.team||'Not provided');const employeeId=String(accountMetadata.employee_id||accountMetadata.employeeId||'Not linked');const employeeTitle=String(accountMetadata.job_title||accountMetadata.title||'Not provided');const employeeLocation=String(accountMetadata.location||'Not provided');const employeeRoleLabel=employeeTitle==='Not provided'?'Employee account':employeeTitle;
+  const[localAccess,setLocalAccess]=useState(()=>localStorage.getItem('dpa_local_access')==='1');
   const[authLoading,setAuthLoading]=useState(true);
   const[commandOpen,setCommandOpen]=useState(false);
   const[noticeOpen,setNoticeOpen]=useState(false);
@@ -55,11 +55,12 @@ function App(){
   const[theme,setTheme]=useState<'light'|'dark'>(()=>(localStorage.getItem('dpa_theme') as 'light'|'dark')||'light');
   const now=useLiveClock();
   const[loginAt,setLoginAt]=useState(()=>sessionStorage.getItem('dpa_login_at')||'');
-  useEffect(()=>{if((session||demoMode)&&!loginAt){const stamp=new Date().toISOString();sessionStorage.setItem('dpa_login_at',stamp);setLoginAt(stamp)}},[session,demoMode,loginAt]);
+  useEffect(()=>{if((session||localAccess)&&!loginAt){const stamp=new Date().toISOString();sessionStorage.setItem('dpa_login_at',stamp);setLoginAt(stamp)}},[session,localAccess,loginAt]);
   useEffect(()=>{document.body.dataset.theme=theme;localStorage.setItem('dpa_theme',theme)},[theme]);
   useEffect(()=>{document.body.dataset.compact=collapsed?'1':'0';localStorage.setItem('dpa_sidebar_collapsed',collapsed?'1':'0')},[collapsed]);
   useEffect(()=>{localStorage.setItem('dpa_last_section',section)},[section]);
 
+  const effectiveDbStatus=!session&&localAccess?'local':dbStatus;
   const sessionSeconds=loginAt?Math.max(0,Math.floor((now.getTime()-new Date(loginAt).getTime())/1000)):0;
   const hh=String(Math.floor(sessionSeconds/3600)).padStart(2,'0');
   const mm=String(Math.floor((sessionSeconds%3600)/60)).padStart(2,'0');
@@ -119,19 +120,14 @@ function App(){
     return <div className="auth-shell"><div className="auth-card"><div className="mark">D</div><h1>Decimal Point Analytics</h1><p>Loading secure workspace…</p></div></div>;
   }
 
-  if(!session&&!demoMode){
-    return <AuthScreen onDemo={()=>{
-      localStorage.setItem('dpa_demo_mode','1');
-      setDemoMode(true);
-    }}/>;
-  }
+  if(!session&&!localAccess){ return <AuthScreen onLocalAccess={()=>{ localStorage.setItem('dpa_local_access','1'); setLocalAccess(true); }}/>; }
 
   const signOut=async()=>{
     await supabaseAuth.auth.signOut().catch(()=>{});
-    localStorage.removeItem('dpa_demo_mode');
+    localStorage.removeItem('dpa_local_access'); localStorage.removeItem('dpa_demo_mode');
     sessionStorage.removeItem('dpa_login_at');
     setLoginAt('');
-    setDemoMode(false);
+    setLocalAccess(false);
     notify('Signed out safely');
   };
 
@@ -145,8 +141,8 @@ function App(){
 
       <div className="workspace">
         <span>WORKSPACE</span>
-        <strong>Mahesh Shirsath</strong>
-        <small>Employee · Analytics</small>
+        <strong>{session?employeeName:'Employee workspace'}</strong>
+        <small>{session?employeeRoleLabel:'Local access'}</small>
       </div>
 
       <nav>
@@ -169,7 +165,7 @@ function App(){
       <div className="sidebottom">
         <div className="secure">
           <ShieldCheck size={17}/>
-          <div><b>Secure workspace</b><span>{dbStatus==='connected'?'Database connected':dbStatus==='offline'?'Demo / offline data':'Checking services…'}</span></div>
+          <div><b>Secure workspace</b><span>{effectiveDbStatus==='connected'?'Database connected':effectiveDbStatus==='offline'?'Connection unavailable':effectiveDbStatus==='local'?'Local access · browser storage':'Checking services…'}</span></div>
         </div>
         <button className="sidebar-signout" onClick={signOut}><LogOut size={17}/><span>Sign out</span></button>
       </div>
@@ -186,7 +182,7 @@ function App(){
         </div>
 
         <div className="head-actions">
-          <span className={'header-health '+dbStatus}><i></i>{dbStatus==='connected'?'All systems operational':dbStatus==='offline'?'Demo workspace':'Checking systems'}</span>
+          <span className={'header-health '+(effectiveDbStatus==='local'?'offline':effectiveDbStatus)}><i></i>{effectiveDbStatus==='connected'?'All systems operational':effectiveDbStatus==='offline'?'Service connection unavailable':effectiveDbStatus==='local'?'Local access · changes stay in this browser':'Checking systems'}</span>
           <div className="corner-status">
             <div className="corner-time"><div className="corner-time-top"><Clock3 size={13}/><span>LOCAL TIME</span><i></i></div><strong>{now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true})}</strong><small>{now.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short'})}</small></div>
             <div className="corner-divider"></div>
@@ -199,7 +195,7 @@ function App(){
             <Bell size={19}/><i>3</i>
           </button>
           <button className="iconbtn" title={theme==='dark'?'Switch to light mode':'Switch to dark mode'} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sun size={17}/>:<Moon size={17}/>}</button>
-          <button className="avatar profile-trigger" aria-label="Open profile menu" onClick={()=>setProfileOpen(v=>!v)}>MS</button>
+          <button className="avatar profile-trigger" aria-label="Open profile menu" onClick={()=>setProfileOpen(v=>!v)}>{employeeInitials}</button>
         </div>
 
         {noticeOpen&&<div className="header-popover notifications">
@@ -211,10 +207,7 @@ function App(){
         </div>}
 
         {profileOpen&&<div className="header-popover profile-popover">
-          <div className="profile-pop-head">
-            <div className="avatar">MS</div>
-            <div><b>Mahesh Shirsath</b><span>Employee · Analytics</span></div>
-          </div>
+          <div className="profile-pop-head"><div className="avatar">{employeeInitials}</div><div><b>{employeeName}</b><span>{session?employeeRoleLabel:'Local access'}</span></div></div>
           <button onClick={()=>{setProfileOpen(false);setSection('Profile');}}><Users size={15}/> My profile</button>
           <button onClick={()=>{setProfileOpen(false);notify('Preferences opened');}}><Settings size={15}/> Preferences</button>
           <button onClick={signOut}><LogOut size={15}/> Sign out</button>
@@ -222,7 +215,7 @@ function App(){
       </header>
 
       <div className="content">
-        {section==='Overview'?<Overview notify={notify} setSection={setSection} dbStatus={dbStatus}/>:
+        {section==='Overview'?<Overview notify={notify} setSection={setSection} dbStatus={effectiveDbStatus} employeeName={employeeName}/>:
          section==='My Work'?<MyWork query={query} notify={notify}/>:
          section==='Projects'?<Projects notify={notify}/>:
          section==='Directory'?<Directory query={query} notify={notify}/>:
@@ -240,7 +233,7 @@ function App(){
          section==='Travel'?<Travel notify={notify}/>:
          section==='Assets'?<Assets notify={notify}/>:
          section==='Support'?<Support notify={notify}/>:
-         section==='Profile'?<Profile notify={notify}/>:
+         section==='Profile'?<Profile notify={notify} employeeName={employeeName} employeeInitials={employeeInitials} employeeEmail={accountEmail} accountStatus={session?'Authenticated':'Local access'} employeeDepartment={employeeDepartment} employeeId={employeeId} employeeTitle={employeeTitle} employeeLocation={employeeLocation}/>:
          section==='Settings'?<SettingsPage notify={notify}/>:
          <Admin notify={notify}/>}
       </div>
@@ -272,7 +265,7 @@ function App(){
   </div>;
 }
 
-function AuthScreen({onDemo}:{onDemo:()=>void}){const[mode,setMode]=useState<'signin'|'signup'>('signin');const[name,setName]=useState('');const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[busy,setBusy]=useState(false);const[message,setMessage]=useState('');const[diagnostic,setDiagnostic]=useState<'checking'|'reachable'|'unreachable'>('checking');const[diagnosticText,setDiagnosticText]=useState('Checking Supabase Auth…');const authDirectUrl=(import.meta.env.VITE_SUPABASE_URL as string|undefined)||'';useEffect(()=>{let active=true;(async()=>{try{const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),7000);const res=await fetch(authDirectUrl+'/auth/v1/health',{method:'GET',headers:{apikey:(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string|undefined)||''},signal:controller.signal});window.clearTimeout(timer);if(!res.ok)throw new Error('HTTP '+res.status);if(active){setDiagnostic('reachable');setDiagnosticText('Supabase Auth is reachable directly.')}}catch(error:any){if(active){setDiagnostic('unreachable');setDiagnosticText(error?.name==='AbortError'?'Supabase Auth check timed out.':error?.message||'Supabase Auth could not be reached directly.')}}})();return()=>{active=false}},[authDirectUrl]);const submit=async(e:React.FormEvent)=>{e.preventDefault();setBusy(true);setMessage('');try{if(mode==='signup'){if(password.length<6){setMessage('Password must be at least 6 characters.');setBusy(false);return}const {data,error}=await supabaseAuth.auth.signUp({email:email.trim(),password,options:{data:{full_name:name.trim()||email.split('@')[0]}}});if(error)throw error;setMessage(data.session?'Account created.':'Account created. Check your email to confirm it, then sign in.')}else{const {error}=await supabaseAuth.auth.signInWithPassword({email:email.trim(),password});if(error)throw error}}catch(error:any){const raw=error?.message||'Authentication failed.';setMessage(raw==='Failed to fetch'?'Failed to fetch — the browser could not reach Supabase Auth. Use the diagnostic status below to identify whether this is a network/service issue.':raw)}finally{setBusy(false)}};return <div className="auth-shell"><div className="auth-card"><div className="auth-brand"><div className="mark">D</div><div><b>DECIMAL POINT</b><span>ANALYTICS</span></div></div><div className="auth-eyebrow">SECURE EMPLOYEE PORTAL</div><h1>{mode==='signin'?'Welcome back':'Create your employee account'}</h1><p className="auth-sub">{mode==='signin'?'Sign in to access your Decimal Point Analytics workspace.':'Create an account to access the employee workspace.'}</p><form onSubmit={submit}>{mode==='signup'&&<label>Full name<input value={name} onChange={e=>setName(e.target.value)} placeholder="Mahesh Shirsath" required/></label>}<label>Work email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" required/></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" minLength={6} required/></label>{message&&<div className="auth-message">{message}</div>}<button className="primary auth-submit" disabled={busy}>{busy?'Please wait…':mode==='signin'?'Sign in':'Create account'}</button></form><button className="auth-switch" onClick={()=>{setMode(mode==='signin'?'signup':'signin');setMessage('')}}>{mode==='signin'?'Need an account? Create one':'Already have an account? Sign in'}</button><div className="auth-diagnostic"><span className={diagnostic}></span><div><b>Auth connection</b><small>{diagnosticText}</small></div></div><button type="button" className="auth-switch" onClick={onDemo}>Continue in demo workspace</button><div className="auth-note"><ShieldCheck size={16}/> Authentication is handled securely by Supabase.</div></div></div>}
+function AuthScreen({onLocalAccess}:{onLocalAccess:()=>void}){const[mode,setMode]=useState<'signin'|'signup'>('signin');const[name,setName]=useState('');const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[busy,setBusy]=useState(false);const[message,setMessage]=useState('');const[diagnostic,setDiagnostic]=useState<'checking'|'reachable'|'unreachable'>('checking');const[diagnosticText,setDiagnosticText]=useState('Verifying sign-in service…');const authDirectUrl=(import.meta.env.VITE_SUPABASE_URL as string|undefined)||'';useEffect(()=>{let active=true;(async()=>{try{const controller=new AbortController();const timer=window.setTimeout(()=>controller.abort(),7000);const res=await fetch(authDirectUrl+'/auth/v1/health',{method:'GET',headers:{apikey:(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string|undefined)||''},signal:controller.signal});window.clearTimeout(timer);if(!res.ok)throw new Error('HTTP '+res.status);if(active){setDiagnostic('reachable');setDiagnosticText('Sign-in service is available.')}}catch(error:any){if(active){setDiagnostic('unreachable');setDiagnosticText(error?.name==='AbortError'?'Sign-in service is taking longer than expected.':'Sign-in service is temporarily unavailable. Please try again shortly.')}}})();return()=>{active=false}},[authDirectUrl]);const submit=async(e:React.FormEvent)=>{e.preventDefault();setBusy(true);setMessage('');try{if(mode==='signup'){if(password.length<6){setMessage('Password must be at least 6 characters.');setBusy(false);return}const {data,error}=await supabaseAuth.auth.signUp({email:email.trim(),password,options:{data:{full_name:name.trim()||email.split('@')[0]}}});if(error)throw error;setMessage(data.session?'Account created.':'Account created. Check your email to confirm it, then sign in.')}else{const {error}=await supabaseAuth.auth.signInWithPassword({email:email.trim(),password});if(error)throw error}}catch(error:any){const raw=error?.message||'Authentication failed.';setMessage(raw==='Failed to fetch'?'Failed to fetch — the browser could not reach Supabase Auth. Use the diagnostic status below to identify whether this is a network/service issue.':raw)}finally{setBusy(false)}};return <div className="auth-shell"><div className="auth-card"><div className="auth-brand"><div className="mark">D</div><div><b>DECIMAL POINT</b><span>ANALYTICS</span></div></div><div className="auth-eyebrow">SECURE EMPLOYEE PORTAL</div><h1>{mode==='signin'?'Welcome back':'Create your employee account'}</h1><p className="auth-sub">{mode==='signin'?'Sign in to access your Decimal Point Analytics workspace.':'Create an account to access the employee workspace.'}</p><form onSubmit={submit}>{mode==='signup'&&<label>Full name<input value={name} onChange={e=>setName(e.target.value)} placeholder="Full name as shown in your employee account" required/></label>}<label>Work email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" required/></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" minLength={6} required/></label>{message&&<div className="auth-message">{message}</div>}<button className="primary auth-submit" disabled={busy}>{busy?'Please wait…':mode==='signin'?'Sign in':'Create account'}</button></form><button className="auth-switch" onClick={()=>{setMode(mode==='signin'?'signup':'signin');setMessage('')}}>{mode==='signin'?'Need an account? Create one':'Already have an account? Sign in'}</button><div className="auth-diagnostic"><span className={diagnostic}></span><div><b>Auth connection</b><small>{diagnosticText}</small></div></div><button type="button" className="auth-switch" onClick={onLocalAccess}>Open local workspace</button><div className="auth-note"><ShieldCheck size={16}/> Account sign-in is managed securely. Local access stores changes in this browser only.</div></div></div>}
 
 function ActionCenter({title,onClose,notify}:{title:string,onClose:()=>void,notify:(s:string)=>void}){
   const[name,setName]=useState('');const[details,setDetails]=useState('');const[amount,setAmount]=useState('');const[file,setFile]=useState<File|null>(null);
@@ -300,7 +293,7 @@ function ActionCenter({title,onClose,notify}:{title:string,onClose:()=>void,noti
 }
 
 function PageTitle({eyebrow,title,sub,action}:{eyebrow:string,title:string,sub:string,action?:React.ReactNode}){return <div className="page-title"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{sub}</p></div>{action}</div>}
-function Overview({notify,setSection,dbStatus}:{notify:(s:string)=>void,setSection:(s:Section)=>void,dbStatus:string}){const now=useLiveClock();
+function Overview({notify,setSection,dbStatus,employeeName}:{notify:(s:string)=>void,setSection:(s:Section)=>void,dbStatus:string,employeeName:string}){const now=useLiveClock();
   const attendanceKey='dpa_attendance_session_'+new Date().toISOString().slice(0,10);
   const[attendanceMarked,setAttendanceMarked]=useState(()=>localStorage.getItem(attendanceKey)==='1');
   const[period,setPeriod]=useState('This month');
@@ -312,7 +305,7 @@ function Overview({notify,setSection,dbStatus}:{notify:(s:string)=>void,setSecti
     <section className="dashboard-hero">
       <div className="hero-copy">
         <div className="eyebrow">EMPLOYEE COMMAND CENTER · {longDateLabel(now)}</div>
-        <h1>{greeting}, Mahesh.</h1>
+        <h1>{employeeName==='Employee'?greeting:greeting+', '+employeeName}</h1>
         <p>One workspace for delivery, people operations, finance, learning and workplace services.</p>
         <div className="hero-actions">
           <button className="primary" onClick={()=>quick('My Work','Opening your active work queue')}><Briefcase size={16}/> Open work queue <ArrowUpRight size={15}/></button>
@@ -321,7 +314,7 @@ function Overview({notify,setSection,dbStatus}:{notify:(s:string)=>void,setSecti
         </div>
       </div>
       <div className="hero-side">
-        <div className="hero-health"><span>WORKSPACE STATUS</span><strong>{dbStatus==='connected'?'Connected':dbStatus==='offline'?'Demo mode':'Checking'}</strong><small>{dbStatus==='connected'?'Database connection verified':dbStatus==='offline'?'Using local demo workspace':'Verifying data connection'}</small></div>
+        <div className="hero-health"><span>WORKSPACE STATUS</span><strong>{dbStatus==='connected'?'Connected':dbStatus==='offline'?'Unavailable':dbStatus==='local'?'Local access':'Checking'}</strong><small>{dbStatus==='connected'?'Database connection verified':dbStatus==='offline'?'The data service is unavailable':dbStatus==='local'?'Browser-stored changes are not synced':'Verifying data connection'}</small></div>
         <div className="hero-ring"><b>86%</b><span>utilization</span></div>
       </div>
     </section>
@@ -410,8 +403,8 @@ function Overview({notify,setSection,dbStatus}:{notify:(s:string)=>void,setSecti
       <div className="portfolio-table">
         <div className="portfolio-head"><span>Program</span><span>Workstream</span><span>Health</span><span>Progress</span><span>Owner</span><span>Next milestone</span></div>
         {[
-          ['Analytics Platform','Data quality & automation','On track','92%','Mahesh',workDay(0)],
-          ['Risk Analytics','Executive dashboard','On track','76%','Mahesh',workDay(3)],
+          ['Analytics Platform','Data quality & automation','On track','92%','You',workDay(0)],
+          ['Risk Analytics','Executive dashboard','On track','76%','You',workDay(3)],
           ['Client Intelligence','Research pipeline','Watch','58%','Priya Nair',workDay(7)],
           ['Enterprise Data Hub','Data engineering','Planning','34%','Vikram Mehta',workDay(15)]
         ].map((p,i)=><div className="portfolio-row" key={i}><div><b>{p[0]}</b><span>{p[1]}</span></div><span className={'health '+String(p[2]).toLowerCase().replace(' ','-')}>{p[2]}</span><div className="table-progress"><i style={{width:p[3]}}></i></div><strong>{p[3]}</strong><span>{p[4]}</span><span>{p[5]}</span></div>)}
@@ -464,7 +457,7 @@ type WorkItem={
 const seedWorkItems:WorkItem[]=[
   {
     id:'WK-1048',title:'Client data quality review',project:'Analytics Platform',type:'Delivery',client:'Global Banking Client',
-    priority:'High',status:'In progress',progress:76,due:workDay(0),estimate:'6h',logged:'4h 50m',sprint:'Sprint 25',owner:'Mahesh Shirsath',
+    priority:'High',status:'In progress',progress:76,due:workDay(0),estimate:'6h',logged:'4h 50m',sprint:'Sprint 25',owner:'You',
     description:'Validate source-to-target data quality for the client analytics feed, reconcile exceptions and prepare the release-readiness note for the project manager.',
     deliverable:'DQ validation workbook + release-readiness summary',dependency:'Client source extract v7.2',
     checklist:['Review source data and mapping rules','Reconcile exception records','Validate corrected outputs','Upload DQ evidence pack','Mark deliverable ready for review'],
@@ -473,7 +466,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1051',title:'Quarterly dashboard refresh',project:'Risk Analytics',type:'Delivery',client:'Internal Risk Office',
-    priority:'Medium',status:'In progress',progress:48,due:workDay(2),estimate:'10h',logged:'4h 05m',sprint:'Sprint 25',owner:'Mahesh Shirsath',
+    priority:'Medium',status:'In progress',progress:48,due:workDay(2),estimate:'10h',logged:'4h 05m',sprint:'Sprint 25',owner:'You',
     description:'Refresh the executive risk dashboard with the latest quarter-end metrics, validate measures against the finance pack and prepare the leadership review build.',
     deliverable:'Power BI dashboard v4 + metric reconciliation sheet',dependency:'Q3 finance pack',
     checklist:['Load quarter-end dataset','Refresh semantic model','Validate KPI calculations','Review dashboard layout','Publish review build'],
@@ -482,7 +475,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1058',title:'Model validation pack',project:'Quant Research',type:'Delivery',client:'Research Practice',
-    priority:'High',status:'In review',progress:71,due:workDay(4),estimate:'8h',logged:'5h 45m',sprint:'Sprint 25',owner:'Mahesh Shirsath',
+    priority:'High',status:'In review',progress:71,due:workDay(4),estimate:'8h',logged:'5h 45m',sprint:'Sprint 25',owner:'You',
     description:'Complete the validation pack for the latest scoring model, covering stability metrics, drift observations, sample-level exceptions and sign-off evidence.',
     deliverable:'Validation memo + evidence annexure',dependency:'Model v2.3 output snapshot',
     checklist:['Run stability checks','Review drift indicators','Investigate sample exceptions','Prepare validation memo','Submit for peer review'],
@@ -491,7 +484,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1062',title:'Knowledge base update',project:'Internal Analytics Enablement',type:'Delivery',client:'Decimal Point Analytics',
-    priority:'Low',status:'Backlog',progress:26,due:workDay(8),estimate:'4h',logged:'1h 05m',sprint:'Sprint 26',owner:'Mahesh Shirsath',
+    priority:'Low',status:'Backlog',progress:26,due:workDay(8),estimate:'4h',logged:'1h 05m',sprint:'Sprint 26',owner:'You',
     description:'Turn recurring analytics support questions into concise internal knowledge articles with examples, troubleshooting steps and clear ownership guidance.',
     deliverable:'3 published knowledge articles',dependency:'SME review from Data Engineering',
     checklist:['Collect recurring questions','Draft article 1','Draft article 2','Draft article 3','Submit SME review'],
@@ -500,7 +493,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1070',title:'Client reconciliation exception pack',project:'Analytics Platform',type:'Delivery',client:'Global Banking Client',
-    priority:'High',status:'Backlog',progress:8,due:workDay(5),estimate:'5h',logged:'0h',sprint:'Sprint 25',owner:'Mahesh Shirsath',
+    priority:'High',status:'Backlog',progress:8,due:workDay(5),estimate:'5h',logged:'0h',sprint:'Sprint 25',owner:'You',
     description:'Prepare a structured exception pack for unresolved client reconciliation items, including severity, business impact, source reference and proposed remediation owner.',
     deliverable:'Exception tracker + remediation ownership matrix',dependency:'Client reconciliation run #48',
     checklist:['Pull unresolved exceptions','Classify business impact','Assign remediation owners','Validate priority with PM','Publish exception pack'],
@@ -509,7 +502,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1074',title:'Analytics release readiness review',project:'Enterprise Data Hub',type:'Delivery',client:'Technology Practice',
-    priority:'Medium',status:'In progress',progress:39,due:workDay(7),estimate:'6h',logged:'2h 10m',sprint:'Sprint 25',owner:'Mahesh Shirsath',
+    priority:'Medium',status:'In progress',progress:39,due:workDay(7),estimate:'6h',logged:'2h 10m',sprint:'Sprint 25',owner:'You',
     description:'Review release-readiness evidence for the next analytics platform deployment and consolidate open validation, documentation and support actions.',
     deliverable:'Release-readiness checklist + sign-off tracker',dependency:'Deployment candidate RC-14',
     checklist:['Review deployment evidence','Validate test coverage','Check rollback notes','Confirm support runbook','Prepare sign-off summary'],
@@ -518,16 +511,16 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'SH-2101',title:'Internal analytics automation sprint',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Innovation Lab',
-    priority:'High',status:'In progress',progress:63,due:workDay(1),estimate:'7h',logged:'4h 20m',sprint:'Innovation Sprint 04',owner:'Mahesh Shirsath',
+    priority:'High',status:'In progress',progress:63,due:workDay(1),estimate:'7h',logged:'4h 20m',sprint:'Innovation Sprint 04',owner:'You',
     description:'Prototype a reusable automation that converts recurring CSV quality checks into a repeatable review report. Keep the work separate from billable client delivery.',
     deliverable:'Automation prototype + sample output report',dependency:'Approved sample CSV dataset',
-    checklist:['Define input/output contract','Create validation rules','Build repeatable report generation','Test against sample datasets','Demo to analytics lead'],
+    checklist:['Define input/output contract','Create validation rules','Build repeatable report generation','Test against sample datasets','Review with analytics lead'],
     activity:[workDay(0)+' · Null/duplicate rules tested',workDay(-1)+' · Prototype folder updated',workDay(-2)+' · Innovation sprint scoped'],
-    comments:['Mahesh · Keep the prototype generic so other teams can reuse it.']
+    comments:['You · Keep the prototype generic so other teams can reuse it.']
   },
   {
     id:'SH-2104',title:'Power BI dashboard polish lab',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Innovation Lab',
-    priority:'Medium',status:'In review',progress:82,due:workDay(3),estimate:'5h',logged:'4h 05m',sprint:'Innovation Sprint 04',owner:'Mahesh Shirsath',
+    priority:'Medium',status:'In review',progress:82,due:workDay(3),estimate:'5h',logged:'4h 05m',sprint:'Innovation Sprint 04',owner:'You',
     description:'Experiment with an executive-friendly dashboard layout, consistent KPI cards, drill-through patterns and a compact mobile experience.',
     deliverable:'Dashboard design prototype + component guide',dependency:'Internal design feedback',
     checklist:['Review executive dashboard examples','Create component variations','Test drill-through interaction','Validate mobile layout','Share design guide'],
@@ -536,7 +529,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'SH-2110',title:'Personal analytics portfolio case study',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Professional Development',
-    priority:'Low',status:'In progress',progress:34,due:workDay(10),estimate:'6h',logged:'1h 50m',sprint:'Personal Build',owner:'Mahesh Shirsath',
+    priority:'Low',status:'In progress',progress:34,due:workDay(10),estimate:'6h',logged:'1h 50m',sprint:'Personal Build',owner:'You',
     description:'Build a sanitized analytics case study covering problem framing, data quality, exploration, KPI design, validation and executive storytelling.',
     deliverable:'Portfolio case study PDF + dashboard walkthrough',dependency:'No confidential client data',
     checklist:['Define case-study problem','Create synthetic dataset','Build analysis notebook','Design executive dashboard','Write final case study'],
@@ -545,7 +538,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'SH-2116',title:'SQL performance pattern library',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Learning Guild',
-    priority:'Low',status:'Completed',progress:100,due:workDay(-5),estimate:'3h',logged:'3h 05m',sprint:'Innovation Sprint 03',owner:'Mahesh Shirsath',
+    priority:'Low',status:'Completed',progress:100,due:workDay(-5),estimate:'3h',logged:'3h 05m',sprint:'Innovation Sprint 03',owner:'You',
     description:'Create a reusable library of SQL patterns for joins, deduplication, exception analysis and reconciliation workflows used by analytics teams.',
     deliverable:'SQL pattern library + examples',dependency:'Peer review completed',
     checklist:['Join pattern examples','Deduplication patterns','Reconciliation examples','Comment and document','Publish to learning hub'],
@@ -554,7 +547,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'SH-2120',title:'Executive narrative template lab',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Innovation Lab',
-    priority:'Medium',status:'Backlog',progress:12,due:workDay(6),estimate:'4h',logged:'0h 35m',sprint:'Innovation Sprint 04',owner:'Mahesh Shirsath',
+    priority:'Medium',status:'Backlog',progress:12,due:workDay(6),estimate:'4h',logged:'0h 35m',sprint:'Innovation Sprint 04',owner:'You',
     description:'Create a reusable executive-storytelling template for analytics reviews covering headline insights, drivers, actions, risks and next steps.',
     deliverable:'Executive narrative template + sample review',dependency:'Leadership feedback slot',
     checklist:['Draft narrative structure','Create example KPI story','Add risk/action sections','Review with analytics lead','Publish template'],
@@ -563,7 +556,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'SH-2124',title:'Reusable data-quality rules catalog',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Quality Guild',
-    priority:'High',status:'In progress',progress:44,due:workDay(9),estimate:'6h',logged:'2h 05m',sprint:'Innovation Sprint 04',owner:'Mahesh Shirsath',
+    priority:'High',status:'In progress',progress:44,due:workDay(9),estimate:'6h',logged:'2h 05m',sprint:'Innovation Sprint 04',owner:'You',
     description:'Build a reusable catalog of common data-quality checks with rule definitions, sample failures, severity guidance and suggested remediation.',
     deliverable:'DQ rules catalog + sample failure library',dependency:'Data governance glossary',
     checklist:['Define rule categories','Add null/duplicate checks','Add reconciliation checks','Map severity levels','Publish reusable catalog'],
@@ -572,7 +565,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1081',title:'October capacity and sprint planning',project:'Analytics Operations',type:'Delivery',client:'Internal Analytics Leadership',
-    priority:'Medium',status:'Backlog',progress:5,due:workDay(11),estimate:'3h',logged:'0h',sprint:'Sprint 26',owner:'Mahesh Shirsath',
+    priority:'Medium',status:'Backlog',progress:5,due:workDay(11),estimate:'3h',logged:'0h',sprint:'Sprint 26',owner:'You',
     description:'Prepare the upcoming sprint capacity view, identify committed versus discretionary work and highlight potential delivery conflicts before planning.',
     deliverable:'Sprint capacity sheet + priority recommendations',dependency:'Team allocation inputs',
     checklist:['Collect planned work','Estimate capacity','Identify conflicts','Prioritize commitments','Share planning summary'],
@@ -581,7 +574,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1086',title:'Client metrics definition audit',project:'Risk Analytics',type:'Delivery',client:'Internal Risk Office',
-    priority:'High',status:'In progress',progress:31,due:workDay(13),estimate:'7h',logged:'1h 20m',sprint:'Sprint 26',owner:'Mahesh Shirsath',
+    priority:'High',status:'In progress',progress:31,due:workDay(13),estimate:'7h',logged:'1h 20m',sprint:'Sprint 26',owner:'You',
     description:'Audit KPI definitions used in the client risk reporting layer and reconcile calculation logic, ownership and source documentation.',
     deliverable:'Metric definition audit + approved glossary',dependency:'Risk metric glossary v2',
     checklist:['Inventory metrics','Compare definitions','Validate source mappings','Flag inconsistencies','Publish approved glossary'],
@@ -590,7 +583,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1092',title:'Weekly client SLA and exception summary',project:'Analytics Platform',type:'Delivery',client:'Global Banking Client',
-    priority:'Urgent',status:'In progress',progress:58,due:workDay(1),estimate:'4h',logged:'2h 10m',sprint:'Sprint 26',owner:'Mahesh Shirsath',
+    priority:'Urgent',status:'In progress',progress:58,due:workDay(1),estimate:'4h',logged:'2h 10m',sprint:'Sprint 26',owner:'You',
     description:'Compile SLA performance, unresolved exceptions and response-time breaches into a concise client-ready weekly summary with clear owners and next actions.',
     deliverable:'Weekly SLA scorecard + exception action list',dependency:'Support ticket export and reconciliation run',
     checklist:['Refresh SLA metrics','Validate breach calculations','Group exceptions by severity','Confirm action owners','Share review-ready summary'],
@@ -599,7 +592,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'WK-1098',title:'Data lineage and source ownership review',project:'Enterprise Data Hub',type:'Delivery',client:'Technology Practice',
-    priority:'High',status:'Backlog',progress:12,due:workDay(4),estimate:'6h',logged:'0h 40m',sprint:'Sprint 26',owner:'Mahesh Shirsath',
+    priority:'High',status:'Backlog',progress:12,due:workDay(4),estimate:'6h',logged:'0h 40m',sprint:'Sprint 26',owner:'You',
     description:'Map critical report fields to upstream datasets, document data owners and flag gaps in lineage evidence that could affect release support.',
     deliverable:'Lineage register + source owner matrix',dependency:'Latest data catalog extract',
     checklist:['Inventory critical report fields','Map upstream datasets','Confirm accountable owners','Flag lineage gaps','Publish review register'],
@@ -608,7 +601,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'SH-2131',title:'Reusable analytics component library',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Internal Innovation Lab',
-    priority:'Medium',status:'In progress',progress:37,due:workDay(5),estimate:'5h',logged:'1h 35m',sprint:'Innovation Sprint 05',owner:'Mahesh Shirsath',
+    priority:'Medium',status:'In progress',progress:37,due:workDay(5),estimate:'5h',logged:'1h 35m',sprint:'Innovation Sprint 05',owner:'You',
     description:'Create reusable KPI, filter, status and chart patterns that help internal analytics pages stay consistent, accessible and responsive across screen sizes.',
     deliverable:'Component reference page + reusable UI examples',dependency:'Approved lavender and teal token set',
     checklist:['Define component tokens','Build KPI card variants','Document chart and filter patterns','Test narrow screen layouts','Publish usage notes'],
@@ -617,7 +610,7 @@ const seedWorkItems:WorkItem[]=[
   },
   {
     id:'SH-2138',title:'AI-assisted documentation experiment',project:'Side Hustle & Innovation',type:'Side Hustle',client:'Analytics Enablement Guild',
-    priority:'Low',status:'Backlog',progress:8,due:workDay(9),estimate:'4h',logged:'0h 25m',sprint:'Innovation Sprint 05',owner:'Mahesh Shirsath',
+    priority:'Low',status:'Backlog',progress:8,due:workDay(9),estimate:'4h',logged:'0h 25m',sprint:'Innovation Sprint 05',owner:'You',
     description:'Evaluate a lightweight workflow for turning approved technical notes into structured documentation, with human review and privacy checks before publication.',
     deliverable:'Experiment notes + quality checklist',dependency:'Sanitized example documentation',
     checklist:['Choose a safe sample input','Define output structure','Test a small workflow','Review factual accuracy','Document guardrails and findings'],
@@ -686,7 +679,7 @@ function MyWork({query,notify}:{query:string,notify:(s:string)=>void}){
     if(!newTask.title.trim())return;
     const item:WorkItem={
       id:'WK-'+Math.floor(3000+Math.random()*6999),title:newTask.title.trim(),project:newTask.project,type:newTask.type,client:'Internal Workspace',
-      priority:newTask.priority,status:'Backlog',progress:0,due:newTask.due,estimate:'To estimate',logged:'0h',sprint:'Next sprint',owner:'Mahesh Shirsath',
+      priority:newTask.priority,status:'Backlog',progress:0,due:newTask.due,estimate:'To estimate',logged:'0h',sprint:'Next sprint',owner:'You',
       description:newTask.description||'New work item created from My Work. Add scope, evidence and acceptance criteria before starting delivery.',
       deliverable:'Define deliverable',dependency:'None',checklist:['Confirm scope and acceptance criteria','Create working draft','Review output','Attach supporting evidence','Mark complete'],activity:['Just now · Task created from My Work'],comments:[]
     };
@@ -813,7 +806,7 @@ function SettingsPage({notify}:{notify:(s:string)=>void}){
   const setTheme=(value:'light'|'dark')=>{setThemeState(value);localStorage.setItem('dpa_theme',value);document.body.dataset.theme=value;notify(value==='dark'?'Dark mode enabled':'Light mode enabled')};
   const items:[string,string,string,boolean][]=[['Desktop notifications','Receive task, leave and service alerts','desktop',true],['Weekly digest','Get a Friday summary of work and people activity','digest',true],['Calendar reminders','15 minute reminder before meetings','calendar',true],['Product updates','News about new portal features','updates',false]];
   return <><PageTitle eyebrow="WORKSPACE PREFERENCES" title="Settings" sub="Personalize notifications, security, appearance and workspace behavior." action={<button className="primary" onClick={()=>notify('Settings saved')}><CheckCircle2 size={16}/> Save changes</button>}/>
-    <div className="settings-hero"><div><span className="eyebrow">PERSONALIZATION</span><h2>Your workspace, your way.</h2><p>Preferences are stored locally in this browser for the demo workspace and take effect immediately.</p></div>
+    <div className="settings-hero"><div><span className="eyebrow">PERSONALIZATION</span><h2>Your workspace, your way.</h2><p>Preferences are stored in this browser and take effect immediately.</p></div>
       <div className="theme-picker"><button className={theme==='light'?'active':''} onClick={()=>setTheme('light')}><Sun size={16}/> Light</button><button className={theme==='dark'?'active':''} onClick={()=>setTheme('dark')}><Moon size={16}/> Dark</button></div>
     </div>
     <div className="grid2">
@@ -884,7 +877,7 @@ function Learning({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebro
 function Expenses({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="FINANCE & REIMBURSEMENTS" title="Expenses" sub="Submit, track and review business expenses and reimbursements." action={<button className="primary" onClick={()=>notify('Expense form opened')}><Plus size={16}/> New expense</button>}/><div className="stats">{[['This month','₹18,420','6 claims'],['Pending','₹7,850','2 approvals'],['Reimbursed','₹10,570','4 paid'],['Policy limit','₹50,000','Monthly']].map((x,i)=><div className="stat" key={i}><span>{x[0]}</span><strong>{x[1]}</strong><small>{x[2]}</small></div>)}</div><section className="panel"><div className="panel-head"><div><h2>Recent claims</h2><p>Expense submissions and reimbursement status</p></div></div>{[['EXP-24091','Client meeting travel','₹4,280','Approved'],['EXP-24088','Team lunch','₹3,570','Pending'],['EXP-24074','Office supplies','₹1,820','Reimbursed'],['EXP-24061','Taxi · client visit','₹1,440','Reimbursed']].map((e,i)=><div className="expense-row" key={i}><div><b>{e[0]}</b><span>{e[1]}</span></div><strong>{e[2]}</strong><label className={e[3].toLowerCase()}>{e[3]}</label><button className="iconbtn" onClick={()=>notify(e[0]+' details opened')}><ChevronRight size={16}/></button></div>)}</section></>}
 function Assets({notify}:{notify:(s:string)=>void}){const assets:[string,string,string,string,any][]=[['ThinkPad T490','Laptop','DPA-LT-0248','Assigned',Laptop2],['Samsung F36','Mobile','DPA-MB-0912','Assigned',Phone],['Microsoft 365','Software','LIC-88421','Active',Globe2],['VPN Access','Security','SEC-12048','Active',ShieldCheck]];return <><PageTitle eyebrow="IT & WORKPLACE" title="My Assets" sub="Company devices, software licenses and assigned workplace equipment." action={<button className="primary" onClick={()=>notify('Asset request opened')}><Plus size={16}/> Request asset</button>}/><div className="business-grid">{assets.map((x,i)=>{const I=x[4];return <div className="business-card asset-card" key={i}><div className="business-icon"><I size={20}/></div><span>{x[1]}</span><h2>{x[0]}</h2><p>{x[2]}</p><label className="asset-status">{x[3]}</label><button className="link" onClick={()=>notify(String(x[0])+' details opened')}>View details <ArrowUpRight size={14}/></button></div>})}</div></>}
 function Support({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="HELP CENTER" title="Support" sub="Get help with technology, HR, facilities and workplace services."/><div className="supportgrid">{[['IT Service Desk','Laptop, access, software and connectivity','Create ticket'],['People & HR','Benefits, payroll, leave and employee support','Contact HR'],['Facilities','Office access, seating and workplace services','Request help']].map(x=><div className="supportcard"><Headphones size={24}/><h2>{x[0]}</h2><p>{x[1]}</p><button className="primary" onClick={()=>notify(x[2]+' opened')}>{x[2]} <ArrowUpRight size={15}/></button></div>)}</div><section className="panel"><div className="panel-head"><div><h2>My tickets</h2><p>Recent support requests</p></div></div>{[['IT-10482','VPN access renewal','IT Service Desk','Open'],['HR-09812','Leave policy clarification','People & HR','Resolved']].map(t=><div className="ticket"><b>{t[0]}</b><span>{t[1]}</span><span>{t[2]}</span><label>{t[3]}</label></div>)}</section></>}
-function Profile({notify}:{notify:(s:string)=>void}){return <><PageTitle eyebrow="MY ACCOUNT" title="Mahesh Shirsath" sub="Employee profile and workspace preferences." action={<button className="ghost" onClick={()=>notify('Profile settings opened')}><Settings size={16}/> Settings</button>}/><section className="profile panel"><div className="profilehero"><div className="bigavatar">MS</div><div><h2>Mahesh Shirsath</h2><p>Analytics · Employee ID DPA-0247</p><span><MapPin size={14}/> Nashik, Maharashtra · India</span></div></div><div className="profilegrid">{[['Work email','mahesh.shirsath@decimalpointanalytics.com'],['Department','Analytics & Insights'],['Manager','Rohan Kulkarni'],['Joined','July 15, 2024'],['Role','Business / Data Analyst'],['Work mode','Hybrid']].map(x=><div key={x[0]}><label>{x[0]}</label><b>{x[1]}</b></div>)}</div></section></>}
+function Profile({notify,employeeName,employeeInitials,employeeEmail,accountStatus,employeeDepartment,employeeId,employeeTitle,employeeLocation}:{notify:(s:string)=>void;employeeName:string;employeeInitials:string;employeeEmail:string;accountStatus:string;employeeDepartment:string;employeeId:string;employeeTitle:string;employeeLocation:string}){return <><PageTitle eyebrow="MY ACCOUNT" title={employeeName} sub="Account details and profile information from your employee account." action={<button className="ghost" onClick={()=>notify('Profile settings opened')}><Settings size={16}/> Settings</button>}/><section className="profile panel"><div className="profilehero"><div className="bigavatar">{employeeInitials}</div><div><h2>{employeeName}</h2><p>{accountStatus==='Authenticated'?'Authenticated employee account':'Local workspace access'}</p>{employeeEmail&&<span><Mail size={14}/> {employeeEmail}</span>}</div></div><div className="profilegrid">{[['Work email',employeeEmail||'Not provided'],['Account status',accountStatus],['Department',employeeDepartment],['Employee ID',employeeId],['Job title',employeeTitle],['Work location',employeeLocation]].map(x=><div key={x[0]}><label>{x[0]}</label><b>{x[1]}</b></div>)}</div><p className="profile-note">Profile details are sourced from your account. Information not supplied by your account is marked as unavailable.</p></section></>}
 function Admin({notify}:{notify:(s:string)=>void}){const adminCards:[string,string,any][]=[['People & access','Manage employee records, roles and permissions',Users],['Projects & delivery','Portfolio, milestones and project health',Briefcase],['Reports & analytics','Operational dashboards and exports',TrendingUp],['Policies & security','Controls, policies and audit activity',ShieldCheck]];return <><PageTitle eyebrow="ADMINISTRATION" title="Admin Center" sub="People, operations and workspace controls." action={<button className="primary" onClick={()=>notify('Employee invite opened')}><Plus size={16}/> Add employee</button>}/><div className="adminstats">{[['Employees','248','+12 this quarter'],['Active projects','42','6 launching soon'],['Open approvals','17','Needs attention'],['System health','99.98%','All services operational']].map(x=><div className="stat"><span>{x[0]}</span><strong>{x[1]}</strong><small>{x[2]}</small></div>)}</div><div className="admincards">{adminCards.map(([a,b,I])=><button className="admincard" onClick={()=>notify(String(a)+' opened')}><I size={24}/><div><b>{a}</b><span>{b}</span></div><ChevronRight/></button>)}</div></>}
 
 createRoot(document.getElementById('root')!).render(<App/>);
