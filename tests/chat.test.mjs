@@ -1,0 +1,12 @@
+import {test,afterEach} from 'node:test';
+import assert from 'node:assert/strict';
+import handler from '../api/chat.js';
+const original=global.fetch;
+afterEach(()=>{global.fetch=original});
+process.env.VITE_SUPABASE_URL='https://auth.example';process.env.VITE_SUPABASE_PUBLISHABLE_KEY='public';process.env.GEMINI_API_KEY='test-secret';
+const request=(messages=[{role:'user',text:'Hello'}])=>new Request('https://portal.example/api/chat',{method:'POST',headers:{Authorization:'Bearer test'},body:JSON.stringify({messages})});
+test('rejects anonymous requests without contacting provider',async()=>{global.fetch=()=>{throw Error('unexpected')};assert.equal((await handler(new Request('https://portal.example/api/chat',{method:'POST'}))).status,401)});
+test('rejects forged sessions',async()=>{global.fetch=async()=>new Response('{}',{status:401});assert.equal((await handler(request())).status,401)});
+test('validates messages before provider call',async()=>{global.fetch=async()=>Response.json({id:'employee'});assert.equal((await handler(request([{role:'model',text:'bad'}]))).status,400)});
+test('returns generated text and sends secret only to Gemini',async()=>{let calls=0;global.fetch=async(url,init)=>{calls++;if(calls===1)return Response.json({id:'employee'});assert.match(url,/generativelanguage.googleapis.com/);assert.equal(init.headers['x-goog-api-key'],'test-secret');const body=JSON.parse(init.body);assert.equal(body.contents[0].parts[0].text,'Hello');return Response.json({candidates:[{content:{parts:[{text:'Hello Mahesh'}]}}]})};const r=await handler(request());assert.equal(r.status,200);assert.deepEqual(await r.json(),{text:'Hello Mahesh'});assert.equal(calls,2)});
+test('reports free quota exhaustion without leaking provider details',async()=>{let calls=0;global.fetch=async()=>++calls===1?Response.json({id:'employee'}):Response.json({error:'secret'},{status:429});const r=await handler(request());assert.equal(r.status,429);assert.doesNotMatch(await r.text(),/secret/)});

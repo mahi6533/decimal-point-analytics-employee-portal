@@ -6,6 +6,7 @@ import {configured,supabase,supabaseAuth} from './lib/supabase';
 import {bulletins,dateKey,documents,downloadDoc,employees,readData,storeKey,type Update} from './model';
 import {currentPage,groups,routes} from './navigation';
 import Dialog from './Dialog';
+import Assistant from './Assistant';
 import EntryScreen from './Entry';
 import Dashboard from './Dashboard';
 import {TimeOffice,LeaveForm,TimeForm} from './TimeOffice';
@@ -122,6 +123,7 @@ function Workspace({session,signOut}:{session:Session|null;signOut:()=>Promise<v
       kind==='doc'&&doc?<><p className="document-body">{doc.body}</p><button className="primary-btn" onClick={()=>downloadDoc(doc.title)}><Download size={16}/>Download policy</button></>:
       bulletin?<><small>{bulletin.category}</small><p className="document-body">{bulletin.body}</p><button className="secondary-btn" onClick={()=>{mark(bulletin.id);close()}}>Mark as read</button></>:null}
     </Dialog>}
+    <Assistant authenticated={!!session}/>
     {toast&&<div className="toast" role="status">{toast}</div>}
   </div>;
 }
@@ -131,3 +133,4 @@ function Preferences({scope,theme,toggle,authenticated,notify}:{scope:string;the
   return <div className="module stack"><h1>Settings</h1><section className="card stack"><h2>Workspace preferences</h2><div className="row"><span>Appearance</span><button className="secondary-btn" onClick={toggle}>{theme==='dark'?'Switch to light':'Switch to dark'}</button></div>{[['desktop','Task notifications'],['digest','Weekly digest'],['calendar','Calendar reminders'],['updates','Product updates']].map(([id,title])=><label className="row" key={id}>{title}<input type="checkbox" checked={prefs[id]??id!=='updates'} onChange={e=>{const next={...prefs,[id]:e.target.checked};localStorage.setItem(key,JSON.stringify(next));setPrefs(next);notify('Preference saved')}}/></label>)}</section><section className="card"><SecurityForm authenticated={authenticated} notify={notify}/></section></div>
 }
 createRoot(document.getElementById('root')!).render(<App/>);
+
