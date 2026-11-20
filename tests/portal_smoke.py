@@ -99,6 +99,18 @@ class PortalBrowserChecks(unittest.TestCase):
         expect(page.get_by_role("button", name="Open profile menu")).to_be_visible()
         self.assertEqual(messages, [])
 
+    def test_assistant_requires_sign_in_and_closes(self):
+        for width in (1440, 1280, 768, 390):
+            page, messages = self.open_workspace(width)
+            page.get_by_role("button", name="Open AI assistant").click()
+            dialog = page.get_by_role("dialog", name="DPA Assistant")
+            expect(dialog).to_be_visible()
+            expect(dialog.get_by_text("Sign in with your employee account to use the assistant.")).to_be_visible()
+            self.assertLessEqual(page.evaluate("document.documentElement.scrollWidth"), width)
+            page.keyboard.press("Escape")
+            expect(dialog).to_have_count(0)
+            self.assertEqual(messages, [])
+
     def test_leave_and_shift_persist(self):
         page, messages = self.open_workspace(1280)
         page.get_by_role("button", name="Punch in", exact=True).click()
@@ -141,3 +153,4 @@ class PortalBrowserChecks(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+

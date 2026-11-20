@@ -12,14 +12,14 @@ export default function Assistant({authenticated}:{authenticated:boolean}){
  async function send(text=draft){
   if(busy||!text.trim()||!authenticated)return;
   // Keep complete conversation pairs within the server's context budget.
-  const next:Message[]=[...messages.slice(-4),{role:'user',text:text.trim()}];
+  const next:Message[]=[...messages,{role:'user',text:text.trim()}];
   setMessages(next);setDraft('');setError('');setBusy(true);
   const abort=new AbortController();controller.current=abort;
   const timeout=window.setTimeout(()=>abort.abort(),55000);
   try{
    const {data,error:authError}=await supabaseAuth.auth.getSession();
    if(authError||!data.session)throw new Error('Your session expired. Please sign in again.');
-   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify({messages:next}),signal:abort.signal});
+   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify({messages:next.slice(-5).map(m=>({...m,text:m.text.slice(0,4000)}))}),signal:abort.signal});
    let result;try{result=await response.json()}catch{throw new Error('AI service unavailable. Please try again.')}
    if(!response.ok)throw new Error(result.error||'The assistant could not respond.');
    setMessages([...next,{role:'model',text:result.text}]);
