@@ -63,7 +63,7 @@ class PortalBrowserChecks(unittest.TestCase):
     def test_engineering_workbench_opens_the_selected_work_item(self):
         page, messages = self.open_workspace(1280)
         for discipline in ("Applied AI", "Software engineering", "Data engineering"):
-            card = page.get_by_role("button", name=re.compile(discipline))
+            card = page.get_by_role("region", name="Engineering workbench").get_by_role("button", name=re.compile(discipline))
             title = card.locator("strong").inner_text()
             card.click()
             dialog = page.get_by_role("dialog", name="Work item")
