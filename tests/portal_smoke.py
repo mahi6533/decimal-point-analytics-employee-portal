@@ -60,6 +60,18 @@ class PortalBrowserChecks(unittest.TestCase):
                 self.assertEqual(messages, [], f"Browser diagnostics at {width}px")
                 page.context.close()
 
+    def test_engineering_workbench_opens_the_selected_work_item(self):
+        page, messages = self.open_workspace(1280)
+        for discipline in ("Applied AI", "Software engineering", "Data engineering"):
+            card = page.get_by_role("button", name=re.compile(discipline))
+            title = card.locator("strong").inner_text()
+            card.click()
+            dialog = page.get_by_role("dialog", name="Work item")
+            expect(dialog.get_by_role("heading", name=title, exact=True)).to_be_visible()
+            page.keyboard.press("Escape")
+            page.get_by_role("navigation", name="Workspace navigation").get_by_title("Overview", exact=True).click()
+        self.assertEqual(messages, [])
+
     def test_dashboard_dialogs_and_persistence(self):
         page, messages = self.open_workspace(1440)
         page.get_by_role("button", name="Apply leave", exact=True).click()
