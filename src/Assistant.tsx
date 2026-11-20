@@ -27,8 +27,7 @@ export default function Assistant({authenticated}:{authenticated:boolean}){
   finally{clearTimeout(timeout);setBusy(false);controller.current=null}
  }
  return <><button className="assistant-launch no-print" aria-label="Open AI assistant" onClick={()=>setOpen(true)}><Bot size={20}/><span>Ask AI</span></button>{open&&<Dialog title="DPA Assistant" close={()=>setOpen(false)} drawer><div className="assistant-panel">
-  <div className="assistant-intro"><span className="assistant-tag">AI & ENGINEERING</span><p>Your thinking partner for code, data and everyday work.</p><small>Powered by Gemini · Free-tier usage limits apply</small></div>
-  <p className="assistant-privacy">Only messages you type are sent to Google. Avoid confidential data and credentials. AI can make mistakes; verify important answers.</p>
+  <div className="assistant-intro"><span className="assistant-tag">AI & ENGINEERING</span><p>Your thinking partner for code, data and everyday work.</p></div>
   {!authenticated?<p role="status">Sign in with your employee account to use the assistant.</p>:<>
   <div className="assistant-history" role="log" aria-label="AI conversation" aria-live="polite">
    {!messages.length&&!busy&&<div className="assistant-prompts">{['Help me debug a Python script','Explain an SQL window function','How do I apply for leave?'].map(p=><button className="secondary-btn" key={p} onClick={()=>void send(p)}>{p}</button>)}</div>}
