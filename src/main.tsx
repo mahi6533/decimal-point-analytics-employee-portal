@@ -14,9 +14,11 @@ import {Services,SecurityForm,Payslip,PersonDetails} from './Services';
 import Resources from './Resources';
 import Operations from './Operations';
 import MyWork from './WorkItems';
+import './tokens.css';
 import './portal.css';
 import './shell.css';
 import './workplace.css';
+import './modern.css';
 
 function App(){
   const [session,setSession]=useState<Session|null>(null);
@@ -133,4 +135,5 @@ function Preferences({scope,theme,toggle,authenticated,notify}:{scope:string;the
   return <div className="module stack"><h1>Settings</h1><section className="card stack"><h2>Workspace preferences</h2><div className="row"><span>Appearance</span><button className="secondary-btn" onClick={toggle}>{theme==='dark'?'Switch to light':'Switch to dark'}</button></div>{[['desktop','Task notifications'],['digest','Weekly digest'],['calendar','Calendar reminders'],['updates','Product updates']].map(([id,title])=><label className="row" key={id}>{title}<input type="checkbox" checked={prefs[id]??id!=='updates'} onChange={e=>{const next={...prefs,[id]:e.target.checked};localStorage.setItem(key,JSON.stringify(next));setPrefs(next);notify('Preference saved')}}/></label>)}</section><section className="card"><SecurityForm authenticated={authenticated} notify={notify}/></section></div>
 }
 createRoot(document.getElementById('root')!).render(<App/>);
+
 
