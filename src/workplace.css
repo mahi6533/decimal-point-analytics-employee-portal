@@ -1,0 +1,58 @@
+/* The masthead, navigation and service shortcuts share a single corporate palette. */
+.portal-shell {--radius:12px}
+.portal-shell .rail {background:#0e203e;border-right-color:#1c3150}
+.rail .rail-brand {min-height:76px;border-color:#ffffff21;color:#fff}
+.rail-brand strong {font-size:.95rem;letter-spacing:-.035em}
+.rail-brand small {margin-top:3px;color:#b8c9df}
+.rail .rail-nav {scrollbar-color:#435775 transparent}
+.rail-group h3 {color:#a2b6d2;letter-spacing:.13em}
+.rail .rail-nav button,.rail-foot button {color:#d1dcec;font-size:.845rem;border-radius:7px}
+.rail .rail-nav button:hover,.rail-foot button:hover {background:#203859;color:white}
+.rail .rail-nav button[aria-current=page] {color:#fff;background:#234777;border-color:#365d93;box-shadow:inset 3px 0 #8cb7ff}
+.rail-nav button em {color:#e2ecff;background:#29476c}
+.rail-foot {border-color:#ffffff21}
+.utility .command-trigger {background:var(--surface);border-color:transparent}
+.workspace-intro {min-width:0;border-radius:var(--radius);overflow:hidden;background:var(--card);border:1px solid var(--line)}
+.welcome-banner {position:relative;isolation:isolate;overflow:hidden;background:#0f2b51;color:#fff}
+.welcome-photo {position:absolute;inset:0 0 0 34%;z-index:-1;background:linear-gradient(90deg,#0f2b51 0%,#0f2b518c 28%,#153a6520 75%),url('/workplace.webp') center 48% / cover no-repeat}
+.welcome-banner::after {content:'';position:absolute;bottom:0;right:0;width:40%;height:4px;background:linear-gradient(90deg,transparent,#81c3fa)}
+.welcome-copy {padding:clamp(22px,2.5vw,38px);max-width:72%}
+.workspace-label {display:flex;align-items:center;gap:9px;letter-spacing:.14em;text-transform:uppercase;font-size:.71rem;font-weight:650;color:#c4dfff}
+.workspace-label::before {content:'';width:23px;height:2px;background:#92c5ff}
+.welcome-copy h1 {margin:9px 0 7px;font-size:clamp(2rem,3vw,3.25rem);color:#fff;letter-spacing:-.055em}
+.module .welcome-copy p {font-size:.92rem;color:#e0eafa}
+.welcome-copy p span {margin:0 .25em;color:#84a5cf}
+.welcome-context {display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:20px;color:#dfebfc;font-size:.8rem}
+.welcome-context>span {display:inline-flex;align-items:center;gap:7px}
+.shift-state {border:1px solid #ffffff40;padding:3px 9px;border-radius:20px;background:#0e294c}
+.shift-state i {width:6px;height:6px;border-radius:50%;background:#bbcada}
+.active-shift i {background:#83ecbe}
+.service-links {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:8px}
+.service-links button {display:flex;align-items:center;gap:.65rem;min-width:0;color:var(--ink);background:transparent;border:0;border-inline-end:1px solid var(--line);font-size:.85rem;font-weight:620;padding:10px clamp(8px,1.4vw,20px)}
+.service-links button:last-child {border:0}
+.service-links button:hover,.service-links button:focus-visible {background:var(--brand-soft);color:var(--brand)}
+.service-links svg {width:18px;height:18px;flex:none;color:var(--brand)}
+.service-links svg:last-child {width:14px;height:14px;color:var(--muted);margin-inline-start:auto}
+.summary-heading {display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:4px 0 -8px}
+.summary-heading span {color:var(--muted);font-size:.8rem}
+.dpa-dashboard .kpis {gap:0;border:1px solid var(--line);background:var(--card);border-radius:var(--radius);overflow:hidden}
+.dpa-dashboard .kpis .dash-kpi {border:0;border-right:1px solid var(--line);border-radius:0;gap:6px;padding:16px 20px}
+.dpa-dashboard .kpis .dash-kpi:last-child {border-right:0}
+.dpa-dashboard .kpi-label {font-size:.85rem;color:var(--ink)}
+.dpa-dashboard .kpis .dash-kpi:hover {background:var(--surface)}
+.dpa-dashboard .kpis .dash-kpi:focus-visible,.service-links button:focus-visible {outline-offset:-4px}
+.dpa-dashboard .card-head h2 {font-size:1.14rem}
+@media (max-width:800px) {
+  .dpa-dashboard .kpis .dash-kpi:nth-child(2) {border-right:0}
+  .dpa-dashboard .kpis .dash-kpi:nth-child(-n+2) {border-bottom:1px solid var(--line)}
+}
+@media (max-width:640px) {
+  .welcome-photo {inset:0;background-image:linear-gradient(90deg,#0f2b51fa,#0f2b51e6 48%,#0f2b5190),url('/workplace.webp')}
+  .welcome-copy {max-width:100%;padding:22px 18px}
+  .welcome-copy h1 {font-size:2rem}
+  .welcome-context {gap:10px}
+  .service-links {grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}
+  .service-links button {padding:9px 6px;font-size:.8rem}
+  .service-links button:nth-child(even) {border-right:0}
+  .dpa-dashboard .kpis .dash-kpi {padding:13px 12px}
+}

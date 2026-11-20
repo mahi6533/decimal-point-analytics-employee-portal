@@ -1,5 +1,5 @@
 import { Fragment, useId, useState } from 'react'
-import { Activity, Bell, Briefcase, CalendarDays, CalendarPlus, ChartNoAxesColumn, ChevronDown, ChevronRight, Clock3, Download, FileText, Inbox, Landmark, ListChecks, Plus, Timer } from 'lucide-react'
+import { Activity, Bell, Briefcase, CalendarDays, CalendarPlus, ChartNoAxesColumn, ChevronDown, ChevronRight, Clock3, Download, FileText, Inbox, Landmark, ListChecks, Headphones, Timer } from 'lucide-react'
 import { balances, businessDays, bulletins, dateKey, documents, downloadDoc, employees, holidayName, payDate, type PortalData } from './model'
 import './dashboard.css'
 
@@ -24,25 +24,6 @@ function shortDate(date: Date) {
 function number(value: number) {
   return value.toLocaleString('en-IN', { maximumFractionDigits: 1 })
 }
-// A decorative isometric grid evokes the firm's quantitative research work.
-function SignalSurface() {
-  const project = (i: number, j: number) => {
-    const height = 78 * Math.exp(-((i - 11) ** 2 / 22 + (j - 6) ** 2 / 21))
-      + 49 * Math.exp(-((i - 21) ** 2 / 16 + (j - 11) ** 2 / 19))
-      + 6 * Math.sin(i * 0.5 + j * 0.25)
-    return [45 + i * 12 + j * 8, 96 - i * 2.3 + j * 5.3 - height]
-  }
-  const line = (points: number[][]) => points.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')
-  return <svg className="signal-surface" viewBox="0 0 510 200" aria-hidden="true" focusable="false">
-    {Array.from({ length: 18 }, (_, j) => <polyline key={'y' + j} points={line(Array.from({ length: 28 }, (_, i) => project(i, j)))} />)}
-    {Array.from({ length: 28 }, (_, i) => <polyline key={'x' + i} points={line(Array.from({ length: 18 }, (_, j) => project(i, j)))} />)}
-    {[[11, 6], [21, 11], [5, 10]].map(([i, j]) => {
-      const [x, y] = project(i, j)
-      return <circle key={i} cx={x} cy={y} r="2.8"/>
-    })}
-  </svg>
-}
-
 export function History({ data }: { data: PortalData }) {
   const [filter, setFilter] = useState('All')
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -105,14 +86,24 @@ export default function Dashboard({data, name, go, launch}: DashboardProps) {
   const distance = Math.round((fromKey(dateKey(payday)).getTime() - fromKey(dateKey(today)).getTime()) / 86400000)
   const pending = data.leaves.filter(row => row.status === 'Pending').length
   return <div className="module dpa-dashboard">
-    <section className="hero dash-hero">
-      <SignalSurface/>
-      <div className="dash-welcome"><div className="dash-date"><CalendarDays size={14}/>{today.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
-        <h1>Good {hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'}, {firstName}.</h1>
-        <div className="dash-affiliation"><span className={'shift-state' + (data.shift ? ' active-shift' : '')}><i/>{data.shift ? 'On shift' : 'Off shift'}</span><span className="dash-role"><Briefcase size={14}/>{data.profile.role || 'Research Analyst'} · {data.profile.department || 'Quantitative Research'}</span></div>
-        <div className="dash-actions"><button className="primary-btn" onClick={() => launch('leave')}><Plus size={16}/>Apply leave</button><button className="secondary-btn" onClick={() => launch('time')}><Clock3 size={16}/>Log timesheet</button></div>
+    <section className="workspace-intro" aria-label="My workspace">
+      <div className="welcome-banner">
+        <div className="welcome-photo" aria-hidden="true"/>
+        <div className="welcome-copy">
+          <div className="workspace-label">My workspace</div>
+          <h1>Good {hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'}, {firstName}.</h1>
+          <p>{data.profile.role || 'Research Analyst'} <span aria-hidden="true">/</span> {data.profile.department || 'Quantitative Research'}</p>
+          <div className="welcome-context"><span><CalendarDays size={15}/>{today.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'})}</span><span className={'shift-state' + (data.shift ? ' active-shift' : '')}><i/>{data.shift ? 'On shift' : 'Off shift'}</span></div>
+        </div>
+      </div>
+      <div className="service-links" aria-label="Employee shortcuts">
+        <button onClick={()=>go('My Work')}><Briefcase/><span>My work</span><ChevronRight/></button>
+        <button onClick={()=>launch('leave')}><CalendarPlus/><span>Apply leave</span><ChevronRight/></button>
+        <button onClick={()=>launch('time')}><Clock3/><span>Log timesheet</span><ChevronRight/></button>
+        <button onClick={()=>go('Support')}><Headphones/><span>Service desk</span><ChevronRight/></button>
       </div>
     </section>
+    <div className="summary-heading"><h2>At a glance</h2><span>{today.toLocaleDateString('en-IN',{month:'long',year:'numeric'})}</span></div>
     <section className="kpis" aria-label="Employee summary">
       <button className="kpi dash-kpi" onClick={() => go('Attendance')}><span className="kpi-label"><span className="metric-icon blue"><Clock3 size={17}/></span>Hours logged</span><strong>{number(logged)}<small> h</small></strong><span className="kpi-caption">of {target} hours this month</span><span className="hours-progress"><i style={{width: Math.min(100, logged / target * 100) + '%'}}/></span></button>
       <button className="kpi dash-kpi" onClick={() => go('Leave')}><span className="kpi-label"><span className="metric-icon teal"><CalendarPlus size={17}/></span>Leave balance</span><strong>{number(available)}<small> days</small></strong><span className="kpi-caption">{Object.entries(balance).map(([type, value]) => type.split(' ')[0] + ' ' + number(value)).join(' · ')}</span></button>

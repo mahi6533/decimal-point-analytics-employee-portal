@@ -15,6 +15,7 @@ import Operations from './Operations';
 import MyWork from './WorkItems';
 import './portal.css';
 import './shell.css';
+import './workplace.css';
 
 function App(){
   const [session,setSession]=useState<Session|null>(null);
