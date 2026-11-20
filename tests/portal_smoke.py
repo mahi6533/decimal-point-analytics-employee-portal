@@ -104,7 +104,7 @@ class PortalBrowserChecks(unittest.TestCase):
         expect(first).to_contain_text("0.5")
         expect(first).to_contain_text("Pending")
         first.get_by_role("button").click()
-        expect(page.get_by_text("Personal appointment", exact=True)).to_be_visible()
+        expect(page.get_by_role("table").first).to_contain_text("Personal appointment")
         self.assertEqual(messages, [])
 
     def test_uploaded_file_survives_reload_and_download(self):
