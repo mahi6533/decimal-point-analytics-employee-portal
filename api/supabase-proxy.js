@@ -1,11 +1,14 @@
 export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
-  const projectUrl = 'https://fgzjqflwmiwnugtphbov.supabase.co';
+  const projectUrl = process.env.VITE_SUPABASE_URL;
+  if (!projectUrl) return new Response('Workspace connection unavailable', {status: 503});
   const incomingUrl = new URL(req.url);
   const forwardedPath = incomingUrl.searchParams.get('path') || '';
   const cleanPath = forwardedPath.startsWith('/') ? forwardedPath : '/' + forwardedPath;
-  const query = incomingUrl.searchParams.get('query') || '';
+  const params = new URLSearchParams(incomingUrl.search);
+  params.delete('path');
+  const query = params.toString();
   const upstreamUrl = projectUrl + cleanPath + (query ? '?' + query : '');
 
   const headers = new Headers(req.headers);
