@@ -1,9 +1,13 @@
-import { Fragment, useId, useState } from 'react'
+import { Fragment, useEffect, useId, useState } from 'react'
 import { Activity, Bell, Briefcase, CalendarDays, CalendarPlus, ChartNoAxesColumn, ChevronDown, ChevronRight, Clock3, Download, FileText, Inbox, Landmark, ListChecks, Headphones, Timer } from 'lucide-react'
 import { balances, businessDays, bulletins, dateKey, documents, downloadDoc, employees, holidayName, payDate, type PortalData } from './model'
+import {readWorkItems} from './WorkItems'
+import {Braces, Database, Workflow} from 'lucide-react'
 import './dashboard.css'
 
 type DashboardProps = {
+  scope:string
+  openItem:(id:string)=>void
   data: PortalData
   name: string
   go: (section: string) => void
@@ -73,8 +77,14 @@ function WeeklyChart({ data }: { data: PortalData }) {
   </section>
 }
 
-export default function Dashboard({data, name, go, launch}: DashboardProps) {
+export default function Dashboard({data, name, go, launch, scope, openItem}: DashboardProps) {
   const today = new Date()
+  const [items,setItems]=useState(()=>readWorkItems(scope))
+  useEffect(()=>{
+    const refresh=()=>setItems(readWorkItems(scope))
+    window.addEventListener('storage',refresh)
+    return ()=>window.removeEventListener('storage',refresh)
+  },[scope])
   const firstName = name.trim().split(/\s+/)[0]
   const hour = today.getHours()
   const monthPrefix = dateKey(today).slice(0, 7)
@@ -88,9 +98,9 @@ export default function Dashboard({data, name, go, launch}: DashboardProps) {
   return <div className="module dpa-dashboard">
     <section className="workspace-intro" aria-label="My workspace">
       <div className="welcome-banner">
-        <div className="welcome-photo" aria-hidden="true"/>
+        <div className="compute-visual" aria-hidden="true"/>
         <div className="welcome-copy">
-          <div className="workspace-label">My workspace</div>
+          <div className="workspace-label">Engineering workspace</div>
           <h1>Good {hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'}, {firstName}.</h1>
           <p>{data.profile.role || 'Research Analyst'} <span aria-hidden="true">/</span> {data.profile.department || 'Quantitative Research'}</p>
           <div className="welcome-context"><span><CalendarDays size={15}/>{today.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'})}</span><span className={'shift-state' + (data.shift ? ' active-shift' : '')}><i/>{data.shift ? 'On shift' : 'Off shift'}</span></div>
@@ -103,7 +113,24 @@ export default function Dashboard({data, name, go, launch}: DashboardProps) {
         <button onClick={()=>go('Support')}><Headphones/><span>Service desk</span><ChevronRight/></button>
       </div>
     </section>
-    <div className="summary-heading"><h2>At a glance</h2><span>{today.toLocaleDateString('en-IN',{month:'long',year:'numeric'})}</span></div>
+    <section aria-labelledby="studio-title" className="studio">
+      <div className="studio-heading"><h2 id="studio-title">Engineering workbench</h2><button onClick={()=>go('My Work')}>All work <ChevronRight size={15}/></button></div>
+      <div className="studio-grid">{[
+        {label:'Applied AI',icon:Workflow,ids:['SH-2138','WK-1058'],tone:'iris'},
+        {label:'Software engineering',icon:Braces,ids:['SH-2131','SH-2101'],tone:'blue'},
+        {label:'Data engineering',icon:Database,ids:['WK-1098','SH-2124'],tone:'mint'}
+      ].map(({label,icon:Icon,ids,tone})=>{
+        const candidates=ids.map(id=>items.find(item=>item.id===id))
+        const task=candidates.find(item=>item&&item.status!=='Completed')??candidates.find(Boolean)
+        if(!task)return null
+        return <button key={label} className={'studio-task '+tone} onClick={()=>openItem(task.id)}>
+          <span className="discipline"><Icon size={18}/>{label}</span>
+          <strong>{task.title}</strong>
+          <span className="studio-meta"><code>{task.id}</code><span>{task.status}</span><ChevronRight size={14}/></span>
+        </button>
+      })}</div>
+    </section>
+    <div className="summary-heading"><h2>Employee overview</h2><span>{today.toLocaleDateString('en-IN',{month:'long',year:'numeric'})}</span></div>
     <section className="kpis" aria-label="Employee summary">
       <button className="kpi dash-kpi" onClick={() => go('Attendance')}><span className="kpi-label"><span className="metric-icon blue"><Clock3 size={17}/></span>Hours logged</span><strong>{number(logged)}<small> h</small></strong><span className="kpi-caption">of {target} hours this month</span><span className="hours-progress"><i style={{width: Math.min(100, logged / target * 100) + '%'}}/></span></button>
       <button className="kpi dash-kpi" onClick={() => go('Leave')}><span className="kpi-label"><span className="metric-icon teal"><CalendarPlus size={17}/></span>Leave balance</span><strong>{number(available)}<small> days</small></strong><span className="kpi-caption">{Object.entries(balance).map(([type, value]) => type.split(' ')[0] + ' ' + number(value)).join(' · ')}</span></button>

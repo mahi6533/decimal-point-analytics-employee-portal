@@ -73,7 +73,8 @@ function Workspace({session,signOut}:{session:Session|null;signOut:()=>Promise<v
     try{const current=localStorage.getItem(storeKey(scope))?readData(scope):data;const next=fn(current);localStorage.setItem(storeKey(scope),JSON.stringify(next));setData(next)}
     catch{notify('Unable to save. Check available browser storage.');throw new Error('Browser storage unavailable')}
   };
-  const go=(id:string)=>{if(!routes.some(([key])=>key===id))return;show('');setPop('');setMobile(false);setPage(id);location.hash=encodeURIComponent(id);window.scrollTo(0,0)};
+  const [workId,setWorkId]=useState<string>();
+  const go=(id:string,itemId?:string)=>{if(!routes.some(([key])=>key===id))return;setWorkId(itemId);show('');setPop('');setMobile(false);setPage(id);location.hash=encodeURIComponent(id);window.scrollTo(0,0)};
   const launch=(id:string)=>{setPop('');setMobile(false);setQuery('');show(id)};
   const close=()=>show('');
   const mark=(id:string)=>update(d=>({...d,read:[...new Set([...d.read,id])]}));
@@ -106,12 +107,12 @@ function Workspace({session,signOut}:{session:Session|null;signOut:()=>Promise<v
       {pop==='bell'&&<section className="utility-pop"><div className="pop-head"><b>Notifications</b><button disabled={!unread.length} onClick={()=>update(d=>({...d,read:bulletins.map(b=>b.id)}))}><CheckCheck size={15}/>Mark all read</button></div>{bulletins.map(b=><div className="notice-row" key={b.id}><button onClick={()=>{mark(b.id);launch('bulletin:'+b.id)}}><small>{b.category}</small>{b.title}</button>{!data.read.includes(b.id)&&<button title="Mark as read" aria-label={'Mark '+b.title+' as read'} onClick={()=>mark(b.id)}><CheckCheck size={15}/></button>}</div>)}</section>}
       {pop==='profile'&&<section className="utility-pop profile-menu"><strong>{name}</strong><small>{connection} · Session <Elapsed start={loginAt}/></small><button onClick={()=>go('Profile')}><UserRound size={16}/>My profile</button><button onClick={()=>go('Settings')}><Settings size={16}/>Settings</button><button onClick={logOut}><LogOut size={16}/>Sign out</button></section>}
     </header><div className="workspace-body" key={page}>
-      {page==='Overview'?<Dashboard data={data} name={name} go={go} launch={launch}/>:
+      {page==='Overview'?<Dashboard scope={scope} openItem={id=>go('My Work',id)} data={data} name={name} go={go} launch={launch}/>:
        ['Attendance','Timesheet','Leave'].includes(page)?<TimeOffice {...shared} punch={punch}/>:
        ['Payroll','Directory','Profile','Support'].includes(page)?<Services {...shared} name={name} authenticated={!!session}/>:
        ['Announcements','Documents'].includes(page)?<Resources {...shared} scope={scope}/>:
        page==='Settings'?<Preferences scope={scope} theme={theme} toggle={toggleTheme} authenticated={!!session} notify={notify}/>:
-       page==='My Work'?<div className="module work-items"><MyWork scope={scope} notify={notify}/></div>:
+       page==='My Work'?<div className="module work-items"><MyWork initialId={workId} scope={scope} notify={notify}/></div>:
        <Operations page={page} scope={scope} notify={notify} go={go}/>}
     </div></main>
     {dialog&&<Dialog key={dialog} title={modalTitle} close={close} drawer={kind==='person'}>

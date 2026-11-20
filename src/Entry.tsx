@@ -3,18 +3,6 @@ import {Eye,EyeOff,LockKeyhole,Monitor,ShieldCheck} from 'lucide-react';
 import {configured,supabaseAuth} from './lib/supabase';
 import './entry.css';
 
-function SignalSurface(){
-  // Project parallel contours onto an isometric grid.
-  const point=(x:number,y:number)=>{
-    const height=96*Math.exp(-((x-.55)**2/.06+(y-.48)**2/.13))+42*Math.exp(-((x-.15)**2/.06+(y-.72)**2/.06));
-    return [165+310*x-150*y,160+64*x+80*y-height].map(n=>n.toFixed(1)).join(',');
-  };
-  return <svg className="entry-surface" viewBox="0 0 510 265" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
-    <defs><linearGradient id="surface-ink"><stop stopColor="#7ba6ff"/><stop offset=".55" stopColor="#78a2ff"/><stop offset="1" stopColor="#52d8c9"/></linearGradient></defs>
-    <g fill="none" stroke="url(#surface-ink)" strokeWidth="1.1">{Array.from({length:26},(_,i)=><g key={i}><polyline points={Array.from({length:55},(_,j)=>point(i/25,j/54)).join(' ')}/><polyline points={Array.from({length:55},(_,j)=>point(j/54,i/25)).join(' ')}/></g>)}</g>
-  </svg>;
-}
-
 export default function Entry({onLocalAccess}:{onLocalAccess:()=>void}){
   const [signup,setSignup]=useState(false);
   const [visible,setVisible]=useState(false);
@@ -52,8 +40,8 @@ export default function Entry({onLocalAccess}:{onLocalAccess:()=>void}){
   return <main className="entry-screen">
     <section className="entry-art" aria-label="Decimal Point Analytics">
       <div className="entry-brand"><img src="/mark.svg" width="42" height="42" alt=""/><span>Decimal Point <strong>Analytics</strong></span></div>
-      <div className="entry-intro"><p>EMPLOYEE PORTAL</p><h2>Workforce<br/>Operations</h2><SignalSurface/></div>
-      <div className="entry-brand-foot">Financial research <i/> Data science <i/> Analytics</div>
+      <div className="entry-intro"><p>EMPLOYEE PORTAL</p><h2>Engineering<br/>Workspace</h2><img className="entry-compute" src="/compute-stack.svg" alt=""/></div>
+      <div className="entry-brand-foot">Applied AI <i/> Software engineering <i/> Data engineering</div>
     </section>
     <section className="entry-form"><div className="entry-box">
       <span className="entry-lock"><LockKeyhole size={21}/></span>

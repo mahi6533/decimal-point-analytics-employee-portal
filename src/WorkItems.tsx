@@ -198,13 +198,13 @@ export const seedWorkItems:WorkItem[]=[
     comments:[]
   }
 ];
-export default function MyWork({scope,notify}:{scope:string,notify:(s:string)=>void}){
-  const query='';
-  const key=(s:string)=>scope==='local'?s:s+':'+scope;
-  const workSeedDate=new Date().toISOString().slice(0,10);
-  const storedDate=localStorage.getItem(key('dpa_work_items_date'));
-  const stored=localStorage.getItem(key('dpa_work_items'));
-  const[items,setItems]=useState<WorkItem[]>(()=>{
+const workKey=(scope:string,key:string)=>scope==='local'?key:key+':'+scope;
+const seedDate=()=>new Date().toISOString().slice(0,10);
+
+export function readWorkItems(scope:string):WorkItem[]{
+  const workSeedDate=seedDate();
+  const storedDate=localStorage.getItem(workKey(scope,'dpa_work_items_date'));
+  const stored=localStorage.getItem(workKey(scope,'dpa_work_items'));
     if(!stored)return seedWorkItems;
     try{
       const saved=JSON.parse(stored) as WorkItem[];
@@ -215,8 +215,14 @@ export default function MyWork({scope,notify}:{scope:string,notify:(s:string)=>v
       const rebased=saved.map(item=>{const fresh=freshById.get(item.id);return fresh?{...item,due:fresh.due}:item;});
       return [...rebased,...seedWorkItems.filter(item=>!savedIds.has(item.id))];
     }catch{return seedWorkItems;}
-  });
-  const[selected,setSelected]=useState<WorkItem|null>(null);
+}
+
+export default function MyWork({scope,notify,initialId}:{scope:string,notify:(s:string)=>void,initialId?:string}){
+  const query='';
+  const workSeedDate=seedDate();
+  const key=(s:string)=>workKey(scope,s);
+  const[items,setItems]=useState(()=>readWorkItems(scope));
+  const[selected,setSelected]=useState<WorkItem|null>(()=>items.find(item=>item.id===initialId)??null);
   const[filter,setFilter]=useState<'all'|'delivery'|'side'|'due'|'today'|'overdue'|'active'|'completed'>('all');
   const[workSearch,setWorkSearch]=useState('');
   const[showCreate,setShowCreate]=useState(false);
