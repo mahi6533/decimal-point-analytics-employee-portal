@@ -98,7 +98,6 @@ export default function Dashboard({data, name, go, launch, scope, openItem}: Das
   return <div className="module dpa-dashboard">
     <section className="workspace-intro" aria-label="My workspace">
       <div className="welcome-banner">
-        <div className="compute-visual" aria-hidden="true"/>
         <div className="welcome-copy">
           <div className="workspace-label">Engineering workspace</div>
           <h1>Good {hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'}, {firstName}.</h1>
@@ -112,6 +111,13 @@ export default function Dashboard({data, name, go, launch, scope, openItem}: Das
         <button onClick={()=>launch('time')}><Clock3/><span>Log timesheet</span><ChevronRight/></button>
         <button onClick={()=>go('Support')}><Headphones/><span>Service desk</span><ChevronRight/></button>
       </div>
+    </section>
+    <div className="summary-heading"><h2>Employee overview</h2><span>{today.toLocaleDateString('en-IN',{month:'long',year:'numeric'})}</span></div>
+    <section className="kpis" aria-label="Employee summary">
+      <button className="kpi dash-kpi" onClick={() => go('Attendance')}><span className="kpi-label"><span className="metric-icon blue"><Clock3 size={17}/></span>Hours logged</span><strong>{number(logged)}<small> h</small></strong><span className="kpi-caption">of {target} hours this month</span><span className="hours-progress"><i style={{width: Math.min(100, logged / target * 100) + '%'}}/></span></button>
+      <button className="kpi dash-kpi" onClick={() => go('Leave')}><span className="kpi-label"><span className="metric-icon teal"><CalendarPlus size={17}/></span>Leave balance</span><strong>{number(available)}<small> days</small></strong><span className="kpi-caption">{Object.entries(balance).map(([type, value]) => type.split(' ')[0] + ' ' + number(value)).join(' · ')}</span></button>
+      <button className="kpi dash-kpi" title="Preview latest payslip" onClick={() => launch('pay')}><span className="kpi-label"><span className="metric-icon violet"><Landmark size={17}/></span>Next payroll</span><strong>{number(Math.max(0, distance))}<small> days</small></strong><span className="kpi-caption">{payday.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</span></button>
+      <button className="kpi dash-kpi" onClick={() => go('Leave')}><span className="kpi-label"><span className="metric-icon amber"><ListChecks size={17}/></span>Pending requests</span><strong>{String(pending).padStart(2,'0')}</strong><span className="kpi-caption">{pending ? 'Awaiting leave approval' : 'All leave requests reviewed'}</span></button>
     </section>
     <section aria-labelledby="studio-title" className="studio">
       <div className="studio-heading"><h2 id="studio-title">Engineering workbench</h2><button onClick={()=>go('My Work')}>All work <ChevronRight size={15}/></button></div>
@@ -129,13 +135,6 @@ export default function Dashboard({data, name, go, launch, scope, openItem}: Das
           <span className="studio-meta"><code>{task.id}</code><span>{task.status}</span><ChevronRight size={14}/></span>
         </button>
       })}</div>
-    </section>
-    <div className="summary-heading"><h2>Employee overview</h2><span>{today.toLocaleDateString('en-IN',{month:'long',year:'numeric'})}</span></div>
-    <section className="kpis" aria-label="Employee summary">
-      <button className="kpi dash-kpi" onClick={() => go('Attendance')}><span className="kpi-label"><span className="metric-icon blue"><Clock3 size={17}/></span>Hours logged</span><strong>{number(logged)}<small> h</small></strong><span className="kpi-caption">of {target} hours this month</span><span className="hours-progress"><i style={{width: Math.min(100, logged / target * 100) + '%'}}/></span></button>
-      <button className="kpi dash-kpi" onClick={() => go('Leave')}><span className="kpi-label"><span className="metric-icon teal"><CalendarPlus size={17}/></span>Leave balance</span><strong>{number(available)}<small> days</small></strong><span className="kpi-caption">{Object.entries(balance).map(([type, value]) => type.split(' ')[0] + ' ' + number(value)).join(' · ')}</span></button>
-      <button className="kpi dash-kpi" title="Preview latest payslip" onClick={() => launch('pay')}><span className="kpi-label"><span className="metric-icon violet"><Landmark size={17}/></span>Next payroll</span><strong>{number(Math.max(0, distance))}<small> days</small></strong><span className="kpi-caption">{payday.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</span></button>
-      <button className="kpi dash-kpi" onClick={() => go('Leave')}><span className="kpi-label"><span className="metric-icon amber"><ListChecks size={17}/></span>Pending requests</span><strong>{String(pending).padStart(2,'0')}</strong><span className="kpi-caption">{pending ? 'Awaiting leave approval' : 'All leave requests reviewed'}</span></button>
     </section>
     <div className="columns dash-columns"><div className="stack"><WeeklyChart data={data}/><History data={data}/></div>
       <div className="stack">
@@ -163,3 +162,4 @@ function Agenda() {
   const upcoming = [...holidays, ...coverage].sort((a,b) => a.date.getTime() - b.date.getTime())
   return <section className="card"><div className="card-head"><div><h2>Team calendar</h2><p>Upcoming holidays and time away</p></div><CalendarDays size={18}/></div><div className="agenda-list">{upcoming.map(event => <div key={event.name}><time dateTime={dateKey(event.date)}><small>{event.date.toLocaleDateString('en-IN',{month:'short'})}</small><b>{event.date.getDate()}</b></time><span><b>{event.name}</b><small>{event.detail}</small></span></div>)}</div></section>
 }
+
