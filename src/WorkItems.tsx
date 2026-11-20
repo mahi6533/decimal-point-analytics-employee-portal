@@ -1,4 +1,7 @@
-import React,{useEffect,useState}from'react';import{createRoot}from'react-dom/client';import{LayoutDashboard,Users,Briefcase,CheckSquare,CalendarDays,Clock3,FileText,Bell,Headphones,Settings,Search,ChevronRight,ArrowUpRight,TrendingUp,ShieldCheck,Menu,X,LogOut,Building2,MapPin,Mail,Phone,Globe2,Plus,Download,MoreHorizontal,GraduationCap,WalletCards,Laptop2,Target,FileCheck,Command,MessageSquare,FolderKanban,ReceiptText,HeartHandshake,PlaneTakeoff,SlidersHorizontal,Sparkles,Sun,Moon,CheckCircle2,AlertTriangle,ArrowDownRight,UsersRound,CreditCard,Landmark,Network,BarChart3}from'lucide-react';import './work-items.css';import Dialog from './Dialog';
+import React, {useEffect, useState} from 'react';
+import {Briefcase, Search, ChevronRight, ArrowUpRight, Plus, Download, FileCheck, MessageSquare, Sparkles, CheckCircle2} from 'lucide-react';
+import Dialog from './Dialog';
+import './work-items.css';
 const today=new Date();
 const dateLabel=(d:Date)=>d.toLocaleDateString('en-US',{month:'short',day:'2-digit'});
 const longDateLabel=(d:Date)=>d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric',year:'numeric'});

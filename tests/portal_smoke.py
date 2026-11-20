@@ -87,6 +87,26 @@ class PortalBrowserChecks(unittest.TestCase):
         expect(page.get_by_role("button", name="Open profile menu")).to_be_visible()
         self.assertEqual(messages, [])
 
+    def test_leave_and_shift_persist(self):
+        page, messages = self.open_workspace(1280)
+        page.get_by_role("button", name="Punch in", exact=True).click()
+        page.reload()
+        page.get_by_role("button", name="Punch out", exact=True).click()
+        expect(page.get_by_role("button", name="Punch in", exact=True)).to_be_visible()
+        page.get_by_role("button", name="Apply leave", exact=True).click()
+        dialog = page.get_by_role("dialog")
+        dialog.get_by_label("Half-day leave").check()
+        dialog.get_by_label("Reason").fill("Personal appointment")
+        dialog.get_by_role("button", name="Submit request").click()
+        expect(dialog).to_have_count(0)
+        page.reload()
+        first = page.get_by_role("table").first.locator("tbody tr").first
+        expect(first).to_contain_text("0.5")
+        expect(first).to_contain_text("Pending")
+        first.get_by_role("button").click()
+        expect(page.get_by_text("Personal appointment", exact=True)).to_be_visible()
+        self.assertEqual(messages, [])
+
     def test_uploaded_file_survives_reload_and_download(self):
         page, messages = self.open_workspace(1280)
         page.get_by_role("navigation", name="Workspace navigation").get_by_title(

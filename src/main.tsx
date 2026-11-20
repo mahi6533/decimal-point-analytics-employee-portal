@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 import type {Session} from '@supabase/supabase-js';
 import {Bell,CheckCheck,ChevronRight,Clock3,Download,LogOut,Menu,Moon,PanelLeftClose,PanelLeftOpen,Search,Settings,Sun,UserRound,X} from 'lucide-react';
 import {configured,supabase,supabaseAuth} from './lib/supabase';
-import {balances,bulletins,dateKey,documents,downloadDoc,employees,readData,storeKey,type Update} from './model';
+import {bulletins,dateKey,documents,downloadDoc,employees,readData,storeKey,type Update} from './model';
 import {currentPage,groups,routes} from './navigation';
 import Dialog from './Dialog';
 import EntryScreen from './Entry';
@@ -42,7 +42,12 @@ function Elapsed({start}:{start:number}){
 }
 function Workspace({session,signOut}:{session:Session|null;signOut:()=>Promise<void>}){
   const scope=session?.user.id||'local';
-  const [data,setData]=useState(()=>readData(scope));
+  const accountProfile = session ? {
+    email:session.user.email||'', department:session.user.user_metadata.department||'',
+    role:session.user.user_metadata.job_title||'', location:session.user.user_metadata.location||''
+  } : {};
+  const [savedData,setData]=useState(()=>readData(scope));
+  const data={...savedData,profile:{...accountProfile,...savedData.profile} as Record<string,string>};
   const [page,setPage]=useState(currentPage);
   const [theme,setTheme]=useState(localStorage.getItem('dpa_theme')==='dark'?'dark':'light');
   const [compact,setCompact]=useState(localStorage.getItem('dpa_sidebar_collapsed')==='1');
