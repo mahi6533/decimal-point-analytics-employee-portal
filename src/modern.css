@@ -161,4 +161,4 @@ input:is([type=checkbox],[type=radio],[type=range]) {accent-color:var(--brand)}
 .plot-bars i:last-child,.plot-legend span:last-child:before {background:var(--brand-fill-soft)}
 .service-links svg,.service-links svg:last-child {color:var(--brand-fill)}
 .assistant-launch {border-left-color:var(--brand-fill)}
-.entry-intro p {color:var(--ink)}
+.entry-intro p {color:#e34b50}
