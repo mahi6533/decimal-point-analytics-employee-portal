@@ -162,3 +162,15 @@ input:is([type=checkbox],[type=radio],[type=range]) {accent-color:var(--brand)}
 .service-links svg,.service-links svg:last-child {color:var(--brand-fill)}
 .assistant-launch {border-left-color:var(--brand-fill)}
 .entry-intro p {color:#e34b50}
+
+/* Slightly stronger typography without changing layout or text size. */
+.portal-shell,.entry-screen,.dialog {font-weight:500}
+.module :is(h1,h2,h3),.dialog :is(h1,h2,h3),.dpa-dashboard .card-head h2,.welcome-copy h1 {font-weight:700}
+.rail .rail-nav button,.rail-foot button {font-weight:600}
+.rail .rail-nav button[aria-current=page] {font-weight:700}
+.dpa-dashboard .kpi-label,.studio-task strong,.dash-feed b,.service-links button {font-weight:650}
+.dpa-dashboard .dash-kpi>strong,.kpi>strong,.plot-summary strong {font-weight:700}
+.module table,.dialog table,.request-history table,.dpa-dashboard .kpi-caption,.studio-meta {font-weight:500}
+.module th,.dialog th,.request-history th {font-weight:700}
+.module :is(input,select,textarea),.dialog :is(input,select,textarea),.entry-box input {font-weight:500}
+.entry-screen .entry-art {background:linear-gradient(135deg,#050505,#171717)}
