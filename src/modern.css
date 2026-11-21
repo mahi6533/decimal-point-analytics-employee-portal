@@ -76,8 +76,8 @@ body {font-size:16px;line-height:1.6}
 .dash-feed small,.agenda-list span small {font-size:.8125rem}
 .dash-feed button>svg:last-child {display:none}
 .module :is(.primary-btn,.secondary-btn),.dialog :is(.primary-btn,.secondary-btn),.entry-screen :is(.primary-btn,.secondary-btn) {min-height:38px;border-radius:var(--control-radius);font-size:.875rem;padding:7px 14px;line-height:1.5}
-.module .primary-btn,.dialog .primary-btn,.entry-screen .primary-btn {background:var(--brand);color:var(--on-brand);border-color:transparent;box-shadow:0 3px 8px #2855cf14}
-.module .primary-btn:enabled:hover,.dialog .primary-btn:enabled:hover,.entry-screen .primary-btn:enabled:hover {background:var(--brand-hover);filter:none}
+.module .primary-btn,.dialog .primary-btn,.entry-screen .primary-btn {background:var(--action);color:var(--action-ink);border-color:transparent;box-shadow:none}
+.module .primary-btn:enabled:hover,.dialog .primary-btn:enabled:hover,.entry-screen .primary-btn:enabled:hover {background:var(--action-hover);filter:none}
 .module .secondary-btn,.dialog .secondary-btn {background:var(--surface);border-color:transparent}
 .module :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea),
 .dialog :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea),.entry-box input {min-height:40px;border:1px solid var(--input-line);border-radius:var(--control-radius);background:var(--card);color:var(--ink);font:400 .875rem/1.5 var(--ui);padding:8px 10px;transition:border-color .16s,box-shadow .16s}
@@ -136,3 +136,21 @@ input:is([type=checkbox],[type=radio],[type=range]) {accent-color:var(--brand)}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media print{.module .card,.dialog{box-shadow:none}.payslip-sheet{--mono:var(--ui)}}
+
+/* Black-led surfaces with restrained red brand accents. */
+.utility .avatar {background:var(--surface);color:var(--ink);box-shadow:none;border:1px solid var(--line)}
+.metric-icon.blue,.metric-icon.teal,.metric-icon.violet,.metric-icon.amber,
+.feed-icon.feed-i0,.feed-icon.feed-i1,.feed-icon.feed-i2,
+.studio-task .discipline svg,.studio-task.blue .discipline svg,.studio-task.mint .discipline svg {color:var(--neutral-icon);background:var(--neutral-icon-bg)}
+.portal-shell .kpi>svg,.portal-shell .kpi .kpi-icon {color:var(--neutral-icon);background:var(--neutral-icon-bg)}
+.welcome-copy p span {color:var(--muted)}
+.entry-screen .entry-art {background:linear-gradient(135deg,#0c0c0f,#222228)}
+.entry-art:before {background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px)}
+.entry-brand strong,.entry-brand-foot {color:#bcbcc6}
+.entry-intro p {color:#f48a99}
+.entry-lock {background:var(--brand-soft);color:var(--brand)}
+.entry-compute {filter:grayscale(1);opacity:.7}
+.assistant-launch {background:var(--card);color:var(--ink);border:1px solid var(--line);border-left:3px solid var(--brand)}
+.assistant-launch:hover {background:var(--surface)}
+.op-symbol {background:var(--surface);color:var(--muted)}
+.work-tabs button.active {background:var(--brand-soft);color:var(--brand);box-shadow:inset 0 -2px var(--brand)}

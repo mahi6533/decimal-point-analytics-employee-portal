@@ -20,6 +20,9 @@ import './shell.css';
 import './workplace.css';
 import './modern.css';
 
+function preferredTheme(){return localStorage.getItem('dpa_palette')==='black-red'&&localStorage.getItem('dpa_theme')==='light'?'light':'dark'}
+document.documentElement.dataset.theme=preferredTheme();
+
 function App(){
   const [session,setSession]=useState<Session|null>(null);
   const [ready,setReady]=useState(!configured);
@@ -53,7 +56,7 @@ function Workspace({session,signOut}:{session:Session|null;signOut:()=>Promise<v
   const [savedData,setData]=useState(()=>readData(scope));
   const data={...savedData,profile:{...accountProfile,...savedData.profile} as Record<string,string>};
   const [page,setPage]=useState(currentPage);
-  const [theme,setTheme]=useState(localStorage.getItem('dpa_theme')==='dark'?'dark':'light');
+  const [theme,setTheme]=useState(preferredTheme);
   const [compact,setCompact]=useState(localStorage.getItem('dpa_sidebar_collapsed')==='1');
   const [mobile,setMobile]=useState(false);
   const [dialog,show]=useState(''),[query,setQuery]=useState(''),[pop,setPop]=useState('');
@@ -65,7 +68,7 @@ function Workspace({session,signOut}:{session:Session|null;signOut:()=>Promise<v
   const notify=(message:string)=>{clearTimeout(toastTimer.current);setToast(message);toastTimer.current=window.setTimeout(()=>setToast(''),3200)};
   useEffect(()=>()=>clearTimeout(toastTimer.current),[]);
   useEffect(()=>{if(!session)return;let active=true;supabase.from('projects').select('id').limit(1).then(({error})=>{if(active)setConnection(error?'Data service offline':'Connected to workspace')});return ()=>{active=false}},[session]);
-  useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('dpa_theme',theme)},[theme]);
+  useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('dpa_theme',theme);localStorage.setItem('dpa_palette','black-red')},[theme]);
   useEffect(()=>{localStorage.setItem('dpa_sidebar_collapsed',compact?'1':'0')},[compact]);
   useEffect(()=>{const refresh=()=>{setPage(currentPage());show('');setMobile(false);setPop('');window.scrollTo(0,0)};window.addEventListener('hashchange',refresh);return ()=>window.removeEventListener('hashchange',refresh)},[]);
   useEffect(()=>{localStorage.setItem('dpa_last_section',page);document.title=(routes.find(([id])=>id===page)?.[1]||page)+' · Decimal Point Analytics'},[page]);

@@ -92,6 +92,10 @@ class PortalBrowserChecks(unittest.TestCase):
         expect(page.get_by_role("dialog").get_by_text(re.compile("Weekends and company holidays"))).to_be_visible()
         page.keyboard.press("Escape")
 
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+        page.get_by_role("button", name="Use light theme").click()
+        page.reload()
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
         page.get_by_role("button", name="Use dark theme").click()
         expect(page.locator("html")).to_have_attribute("data-theme", "dark")
         page.reload()
