@@ -1,0 +1,59 @@
+/* Shared theme tokens. Change these to rebrand the entire workspace. */
+:root {
+  color-scheme: light;
+  --ui: 'Inter Variable', Inter, system-ui, sans-serif;
+  /* Keep existing numeric selectors compatible while using one type family. */
+  --mono: var(--ui);
+  --canvas: #f4f4f5;
+  --card: #ffffff;
+  --surface: #ededf0;
+  --ink: #080808;
+  --muted: #444444;
+  --line: #dedee3;
+  --input-line: #9a9aa3;
+  --brand: #b61e34;
+  --brand-hover: #96172a;
+  --brand-soft: #fbeef0;
+  --accent: #087f77;
+  --teal-soft: #e3f4f1;
+  --violet: #6953bc;
+  --violet-soft: #f0edff;
+  --green-bg: #e2f6ed; --green-ink: #096542;
+  --amber-bg: #fff2cd; --amber-ink: #805500;
+  --rose-bg: #ffe7ec; --rose-ink: #aa2547;
+  --nav-bg: #080808; --nav-ink: #e4e4e8;
+  --nav-muted: #a8a8b2; --nav-hover: #1c1c1c;
+  --nav-active: #450f18; --nav-marker: #c51b2d;
+  --on-brand: #ffffff;
+  --brand-fill: #b31327; --brand-fill-soft: #3c1119;
+  --focus: #bd2740;
+  --action: #b61e34; --action-hover: #96172a; --action-ink: #ffffff;
+  --neutral-icon: #63636e; --neutral-icon-bg: #ececf0;
+  --radius: 4px; --control-radius: 4px; --rail-width: 256px;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px;
+  --space-4: 16px; --space-5: 16px; --space-6: 20px;
+  --shadow-card: 0 1px 3px #182c4f06;
+  --shadow-hover: 0 2px 6px #182c4f10;
+  --shadow-overlay: 0 18px 60px #10213d26;
+  --text: var(--ink); --border: var(--line);
+  --primary: var(--brand); --subtle: var(--surface);
+}
+html[data-theme=dark], body[data-theme=dark] {
+  color-scheme: dark;
+  --canvas: #050505; --card: #111111; --surface: #1b1b1b;
+  --ink: #f5f5f5; --muted: #bcbcbc; --line: #303030;
+  --input-line: #696975;
+  --brand: #e34b50; --brand-hover: #f25d60; --brand-soft: #320d13;
+  --accent: #70d5c6; --teal-soft: #163b39;
+  --violet: #c0b1ff; --violet-soft: #302a4e;
+  --green-bg: #123d32; --green-ink: #7fe6bc;
+  --amber-bg: #42351a; --amber-ink: #ffdd89;
+  --rose-bg: #421f2d; --rose-ink: #ffb2c2;
+  --nav-bg: #080808; --nav-hover: #1c1c1c; --nav-active: #450f18;
+  --on-brand: #ffffff; --focus: #e34b50;
+  --action: #990f22; --action-hover: #ba182c; --action-ink: #ffffff;
+  --neutral-icon: #c5c5ce; --neutral-icon-bg: #25252d;
+  --shadow-card: 0 4px 18px #00000018;
+  --shadow-hover: 0 8px 26px #00000030;
+  --shadow-overlay: 0 18px 60px #00000060;
+}

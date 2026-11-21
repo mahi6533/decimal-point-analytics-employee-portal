@@ -1,0 +1,176 @@
+/* Compact corporate presentation. Shared tokens live in tokens.css. */
+body {font-size:16px;line-height:1.6}
+.portal-shell {--radius:4px;line-height:1.5}
+.portal-shell,.entry-screen,.dialog {font-family:var(--ui)}
+.entry-intro p, .entry-screen {font-family:var(--ui)}
+.workspace-body {max-width:1600px;margin-inline:auto;padding:20px 24px 76px}
+.module,.stack,.ops-module {gap:var(--space-5)}
+.module :is(h1,h2,h3),.dialog :is(h1,h2,h3) {letter-spacing:-.025em;text-wrap:balance}
+.module h1,.svc-heading h1,.op-heading h1 {font-size:clamp(1.5rem,2vw,1.875rem);font-weight:700;line-height:1.2}
+.module h2,.dialog h2,.dpa-dashboard .card-head h2 {font-size:1rem;font-weight:650;line-height:1.4}
+.module h3 {font-size:1rem;line-height:1.5}
+.module p,.dialog p {line-height:1.65}
+.module small,.dialog small {font-size:.8125rem}
+.portal-shell .rail {background:var(--nav-bg);border-right:0;box-shadow:4px 0 24px #0a19330a}
+.rail .rail-brand {min-height:64px;padding-inline:20px;border-color:#ffffff12}
+.rail-brand strong {font-size:.9375rem;line-height:1.4;letter-spacing:-.02em}
+.rail-group h3 {color:var(--nav-muted);font-size:.6875rem;letter-spacing:.12em;margin:18px 0 6px}
+.rail .rail-nav button,.rail-foot button {color:var(--nav-ink);font-size:.875rem;min-height:38px;border-radius:3px;margin-block:1px;padding:7px 12px;transition:background .16s,color .16s}
+.rail .rail-nav button:hover,.rail-foot button:hover {background:var(--nav-hover);color:white}
+.rail .rail-nav button[aria-current=page] {background:var(--nav-active);border-color:transparent;color:white;box-shadow:inset 3px 0 var(--nav-marker);font-weight:650}
+.rail-nav button svg {stroke-width:1.8}
+.rail-foot {border-color:#ffffff12}
+.rail-nav button em {background:var(--nav-hover);color:var(--nav-ink)}
+.portal-shell .utility {border-bottom:1px solid var(--line);box-shadow:none}
+.utility .crumb {font-size:.8125rem}
+.utility :is(.icon-button,.command-trigger) {border-color:transparent;background:var(--surface);border-radius:var(--control-radius)}
+.utility .command-trigger {padding-inline:12px}
+.utility .avatar {box-shadow:0 0 0 4px var(--brand-soft)}
+.module .card,.module .kpi,.directory-grid>button,
+.work-summary-card,.work-command-panel,.execution-col {border-color:var(--line);box-shadow:var(--shadow-card);border-radius:var(--radius)}
+.module .card {padding:var(--space-5)}
+.module :is(button.card,button.kpi),.directory-grid>button,.studio-task {transition:box-shadow .18s,transform .18s,background .18s}
+.module :is(button.card,button.kpi):hover,.directory-grid>button:hover,.studio-task:hover {box-shadow:var(--shadow-hover);transform:none}
+/* Compact welcome strip replaces the large illustrated hero. */
+.workspace-intro {border:1px solid var(--line);border-top:3px solid var(--brand);border-radius:var(--radius);box-shadow:none;background:var(--card)}
+.welcome-banner {background:var(--card);color:var(--ink)}
+.welcome-banner::after,.compute-visual {display:none}
+.welcome-copy {padding:16px 20px;max-width:none;display:grid;grid-template-columns:1fr auto;column-gap:24px;align-items:center}
+.workspace-label {grid-column:1;font-size:.6875rem;letter-spacing:.12em;color:var(--brand)}
+.workspace-label::before {display:none}
+.welcome-copy h1 {grid-column:1;margin:5px 0;font-size:1.625rem;line-height:1.25;letter-spacing:-.025em;color:var(--ink)}
+.module .welcome-copy p {grid-column:1;color:var(--muted);font-size:.8125rem}
+.welcome-context {grid-column:2;grid-row:1/4;display:grid;justify-items:end;gap:8px;margin:0;font-size:.8125rem;color:var(--muted)}
+.shift-state {background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:3px}
+.shift-state i {background:var(--muted)}
+.active-shift {background:var(--green-bg);color:var(--green-ink)}
+.active-shift i {background:var(--green-ink)}
+.service-links {gap:0;padding:0;background:var(--surface);border-top:1px solid var(--line)}
+.service-links button {border:0;border-right:1px solid var(--line);border-radius:0;padding:11px 16px;font-size:.8125rem;background:transparent}
+.service-links button:last-child {border:0}
+.service-links svg:last-child,.studio-meta>svg:last-child,.studio-heading button>svg {display:none}
+.summary-heading {margin:0 0 -8px}
+.summary-heading span {font-size:.8125rem}
+.dpa-dashboard .kpis {gap:12px;border:0;border-radius:0;overflow:visible;background:transparent}
+.dpa-dashboard .kpis .dash-kpi {border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;gap:5px;box-shadow:var(--shadow-card)}
+.dpa-dashboard .kpis .dash-kpi:hover {background:var(--card);box-shadow:var(--shadow-hover)}
+.dpa-dashboard .dash-kpi>strong,.kpi>strong,.plot-summary strong {font-weight:650;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.dpa-dashboard .kpi-label {font-size:.875rem;line-height:1.4;align-items:center}
+.dpa-dashboard .kpi-caption {font-size:.8125rem;line-height:1.5}
+.kpi-label .metric-icon {width:28px;height:28px;border-radius:4px}
+.metric-icon.violet,.feed-icon.feed-i2 {background:var(--violet-soft);color:var(--violet)}
+.studio-grid {gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card)}
+.studio-task {padding:14px 16px;border:0;border-right:1px solid var(--line);border-radius:0;background:var(--card);box-shadow:none;gap:6px}
+.studio-task:last-child {border-right:0}
+.studio-heading {margin:0 0 8px}
+.studio-task:hover {background:var(--brand-soft);box-shadow:none}
+.studio-task .discipline {font:600 .8125rem/1.5 var(--ui);color:var(--muted)}
+.studio-task .discipline svg {width:18px;height:18px;padding:0;border-radius:0;background:transparent;color:var(--brand)}
+.studio-task.blue .discipline svg {background:transparent;color:var(--brand)}
+.studio-task.mint .discipline svg {background:var(--teal-soft);color:var(--accent)}
+.studio-task strong {font-size:.875rem;line-height:1.4}
+.studio-meta,.studio-meta code {font-size:.8125rem}
+.dash-feed button {padding:10px 2px;border-color:var(--line);border-radius:0}
+.dash-feed button:hover {background:var(--brand-soft)}
+.dash-feed b {font-size:.875rem}
+.dash-feed small,.agenda-list span small {font-size:.8125rem}
+.dash-feed button>svg:last-child {display:none}
+.module :is(.primary-btn,.secondary-btn),.dialog :is(.primary-btn,.secondary-btn),.entry-screen :is(.primary-btn,.secondary-btn) {min-height:38px;border-radius:var(--control-radius);font-size:.875rem;padding:7px 14px;line-height:1.5}
+.module .primary-btn,.dialog .primary-btn,.entry-screen .primary-btn {background:var(--action);color:var(--action-ink);border-color:transparent;box-shadow:none}
+.module .primary-btn:enabled:hover,.dialog .primary-btn:enabled:hover,.entry-screen .primary-btn:enabled:hover {background:var(--action-hover);filter:none}
+.module .secondary-btn,.dialog .secondary-btn {background:var(--surface);border-color:transparent}
+.module :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea),
+.dialog :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea),.entry-box input {min-height:40px;border:1px solid var(--input-line);border-radius:var(--control-radius);background:var(--card);color:var(--ink);font:400 .875rem/1.5 var(--ui);padding:8px 10px;transition:border-color .16s,box-shadow .16s}
+.svc-search-input input {padding-left:36px!important}
+.entry-box .entry-password input {padding-right:46px}
+.module :is(input,textarea)::placeholder,.dialog :is(input,textarea)::placeholder {color:var(--muted);opacity:1}
+.module :is(input,textarea,select):focus,.dialog :is(input,textarea,select):focus,.entry-box input:focus {border-color:var(--focus);box-shadow:0 0 0 3px var(--brand-soft)}
+:where(.portal-shell,.dialog,.entry-screen) :focus-visible {outline:3px solid var(--focus);outline-offset:3px}
+.rail :focus-visible {outline-color:var(--nav-marker)}
+input:is([type=checkbox],[type=radio],[type=range]) {accent-color:var(--brand)}
+.form-grid,.svc-form {gap:14px}
+.form-grid label,.dialog form label,.svc-form label {font-size:.875rem;gap:8px;color:var(--ink)}
+.module table,.dialog table,.request-history table {font-size:.875rem;font-family:var(--ui);font-variant-numeric:tabular-nums}
+.module :is(td,th),.dialog :is(td,th),.request-history :is(td,th) {padding:10px 12px;border-bottom-color:var(--line)}
+.module th,.dialog th,.request-history th {font-size:.75rem;text-transform:none;letter-spacing:.015em;font-weight:650;background:var(--surface)}
+.module tbody tr:hover,.dialog tbody tr:hover {background:var(--brand-soft)}
+.module tbody tr:focus-within,.dialog tbody tr:focus-within {background:var(--brand-soft)}
+.table-wrap {border-radius:4px}
+.work-tabs button {padding:10px 14px;border:0;background:var(--surface);border-radius:4px;min-height:44px}
+.work-tabs button.active {background:var(--brand);color:var(--on-brand)}
+.work-item-row,.execution-card {border-color:var(--line);border-radius:4px;padding:14px;line-height:1.6}
+.work-item-row:hover,.execution-card:hover {background:var(--brand-soft);border-color:var(--brand)}
+.dialog {border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow-overlay);font-size:1rem}
+.dialog.drawer {border-radius:6px 0 0 20px}
+.utility-pop {border-color:transparent;border-radius:6px;box-shadow:var(--shadow-overlay)}
+.dialog-title {padding-bottom:12px;margin-bottom:16px}
+.assistant-launch {background:var(--brand);color:var(--on-brand);border:0;box-shadow:var(--shadow-hover)}
+.assistant-launch:hover {background:var(--brand-hover)}
+.toast {bottom:84px;max-width:calc(100vw - 32px);background:var(--nav-bg);color:var(--nav-ink);box-shadow:var(--shadow-overlay);border-radius:4px}
+/* Preserve comfortable touch targets on tablets and phones. */
+.card-head {margin-bottom:12px}
+.dpa-dashboard .card-head p {font-size:.75rem}
+.module .columns,.stack {gap:16px}
+.dpa-dashboard .dash-kpi>strong {font-size:1.625rem}
+.hours-progress {height:3px}
+.assistant-launch {border-radius:4px;padding:10px 14px}
+@media(max-width:1023px){.rail .rail-nav button,.rail-foot button{min-height:44px}.workspace-body{padding:18px 20px 76px}}
+@media(max-width:800px){.welcome-copy{grid-template-columns:1fr}.welcome-context{grid-row:auto;grid-column:1;display:flex;justify-items:start;margin-top:10px}.module .columns{gap:16px}.service-links{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:600px){
+ .workspace-body{padding:14px 12px 76px}.module,.stack,.ops-module{gap:14px}
+ .module .card{padding:14px}.welcome-copy{padding:14px 16px}.welcome-copy h1{font-size:1.375rem}
+ .welcome-context{flex-wrap:wrap;font-size:.75rem;gap:8px}
+ .service-links{grid-template-columns:repeat(2,minmax(0,1fr))}.service-links button{min-height:44px;font-size:.8125rem;padding:10px 12px}
+ .service-links button:nth-child(2){border:0}.service-links button:nth-child(-n+2){border-bottom:1px solid var(--line)}
+ .dpa-dashboard .kpis{gap:8px}.dpa-dashboard .kpis .dash-kpi{padding:12px;gap:5px;border:1px solid var(--line)}
+ .dpa-dashboard .kpi-label{font-size:.8125rem;gap:6px}.kpi-label .metric-icon{width:24px;height:24px;flex:none}
+ .dpa-dashboard .kpi-caption{font-size:.75rem}
+ .studio-grid{grid-template-columns:1fr}.studio-task{padding:12px 14px;border:0;border-bottom:1px solid var(--line)}.studio-task:last-child{border-bottom:0}
+ .summary-heading{flex-wrap:wrap;gap:4px}.summary-heading span{font-size:.75rem}
+ .module :is(td,th),.dialog :is(td,th){padding:10px 8px}
+ .dialog.drawer{border-radius:0}.dialog{padding:18px}
+ .module :is(.primary-btn,.secondary-btn),.dialog :is(.primary-btn,.secondary-btn){min-height:44px}
+ .module :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea),.dialog :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea){font-size:1rem;min-height:44px}
+ .utility .shift-button,.utility .crumb b{font-size:.75rem}
+ .entry-screen .entry-form{padding:32px 22px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+@media print{.module .card,.dialog{box-shadow:none}.payslip-sheet{--mono:var(--ui)}}
+
+/* Black-led surfaces with restrained red brand accents. */
+.utility .avatar {background:var(--surface);color:var(--ink);box-shadow:none;border:1px solid var(--line)}
+.metric-icon.blue,.metric-icon.teal,.metric-icon.violet,.metric-icon.amber,
+.feed-icon.feed-i0,.feed-icon.feed-i1,.feed-icon.feed-i2,
+.studio-task .discipline svg,.studio-task.blue .discipline svg,.studio-task.mint .discipline svg {color:var(--neutral-icon);background:var(--neutral-icon-bg)}
+.portal-shell .kpi>svg,.portal-shell .kpi .kpi-icon {color:var(--neutral-icon);background:var(--neutral-icon-bg)}
+.welcome-copy p span {color:var(--muted)}
+.entry-screen .entry-art {background:linear-gradient(135deg,#0c0c0f,#222228)}
+.entry-art:before {background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px)}
+.entry-brand strong,.entry-brand-foot {color:#bcbcc6}
+.entry-intro p {color:#f48a99}
+.entry-lock {background:var(--brand-soft);color:var(--brand)}
+.entry-compute {filter:grayscale(1);opacity:.7}
+.assistant-launch {background:var(--card);color:var(--ink);border:1px solid var(--line);border-left:3px solid var(--brand)}
+.assistant-launch:hover {background:var(--surface)}
+.op-symbol {background:var(--surface);color:var(--muted)}
+.work-tabs button.active {background:var(--brand-soft);color:var(--brand);box-shadow:inset 0 -2px var(--brand)}
+
+/* Deep crimson fills; brighter red is reserved for readable text and focus. */
+.workspace-intro {border-top-color:var(--brand-fill)}
+.hours-progress i,.plot-bars i,.plot-legend span:before {background:var(--brand-fill)}
+.plot-bars i:last-child,.plot-legend span:last-child:before {background:var(--brand-fill-soft)}
+.service-links svg,.service-links svg:last-child {color:var(--brand-fill)}
+.assistant-launch {border-left-color:var(--brand-fill)}
+.entry-intro p {color:#e34b50}
+
+/* Slightly stronger typography without changing layout or text size. */
+.portal-shell,.entry-screen,.dialog {font-weight:500}
+.module :is(h1,h2,h3),.dialog :is(h1,h2,h3),.dpa-dashboard .card-head h2,.welcome-copy h1 {font-weight:700}
+.rail .rail-nav button,.rail-foot button {font-weight:600}
+.rail .rail-nav button[aria-current=page] {font-weight:700}
+.dpa-dashboard .kpi-label,.studio-task strong,.dash-feed b,.service-links button {font-weight:650}
+.dpa-dashboard .dash-kpi>strong,.kpi>strong,.plot-summary strong {font-weight:700}
+.module table,.dialog table,.request-history table,.dpa-dashboard .kpi-caption,.studio-meta {font-weight:500}
+.module th,.dialog th,.request-history th {font-weight:700}
+.module :is(input,select,textarea),.dialog :is(input,select,textarea),.entry-box input {font-weight:500}
+.entry-screen .entry-art {background:linear-gradient(135deg,#050505,#171717)}
